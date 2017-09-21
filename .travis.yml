@@ -1,0 +1,20 @@
+dist: precise
+language: node_js
+node_js: stable
+
+before_script: yarn install
+script: yarn test
+
+jobs:
+  include:
+    - stage: npm release
+      node_js: stable
+      before_deploy:
+      - yarn install
+      - yarn build
+      deploy:
+        provider: npm
+        email: "webdev@experium.ru"
+        api_key: $NPM_API_KEY
+        on:
+          tags: true
