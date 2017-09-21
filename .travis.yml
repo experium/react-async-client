@@ -13,6 +13,7 @@ jobs:
       - yarn install
       - yarn build
       deploy:
+        skip_cleanup: true
         provider: npm
         email: "webdev@experium.ru"
         api_key: $NPM_API_KEY
