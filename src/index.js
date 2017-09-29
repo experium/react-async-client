@@ -90,6 +90,7 @@ function getAsyncReducers() {
 
 export { createAsyncAction, getAsyncSagas, getAsyncReducers, noParamsReducer };
 export { withAsyncActions } from './withAsyncActions';
+export { withAsyncHandlers } from './withAsyncHandlers';
 export {
     toError,
     toRequest,
