@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { compose, map, mapObjIndexed, is, assoc, forEachObjIndexed, fromPairs } from 'ramda';
 import { connect } from 'react-redux';
 import { getActionData, getActionMeta } from './asyncHelpers';
-import { equals, merge, when, prop, forEach } from 'ramda';
+import { runSaga } from './utils/saga';
+import { equals, merge, when, prop, forEach, invoker } from 'ramda';
 
 const defaultOptions = {
     connectData: true,
@@ -23,9 +24,11 @@ export const withAsyncActions = (actions, options = {}) => {
     return WrappedComponent => {
         const getActions = props => is(Function, actions) ? actions(props) : actions;
         let intervals = [];
+        let sagaTasks = [];
 
         const hoc = class extends Component {
             componentWillMount() {
+                const actions = getActions(this.props);
                 forEachObjIndexed((action, key) => when(prop('autoFetch'), (options) => {
                     const getPayload = action.defaultPayload;
                     this.props[key].dispatch(getPayload && getPayload(this.props));
@@ -34,7 +37,11 @@ export const withAsyncActions = (actions, options = {}) => {
                             this.props[key].dispatch(getPayload && getPayload(this.props));
                         }, options.pollInterval));
                     })(options);
-                })(merge(options, action.options)), getActions(this.props));
+                })(merge(options, action.options)), actions);
+
+                forEachObjIndexed(when(prop('saga'), (action) => {
+                    sagaTasks.push(runSaga(action.saga, this.props));
+                }), actions);
             }
 
             componentWillReceiveProps(nextProps) {
@@ -64,6 +71,7 @@ export const withAsyncActions = (actions, options = {}) => {
             componentWillUnmount() {
                 forEachObjIndexed((action, key) => when(prop('autoReset'), this.props[key].reset)(merge(options, action.options)), getActions(this.props));
                 forEach(clearInterval, intervals);
+                forEach(task => task.cancel(), sagaTasks);
             }
 
             render() {

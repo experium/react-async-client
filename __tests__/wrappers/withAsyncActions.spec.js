@@ -7,6 +7,7 @@ import {
     createAsyncAction,
     withAsyncActions
 } from '../../src/index';
+import { take, select} from 'redux-saga/effects';
 
 const FIRST_ACTION = 'FIRST_ACTION';
 const SECOND_ACTION = 'SECOND_ACTION';
@@ -321,7 +322,7 @@ describe('With Async Client HOC', () => {
             thirdAction: thirdAction.withPendingHandler(({ action }) => action())
         })(Component);
 
-        const { wrapper, store } = setupComponent(ComponentWithMetaHandler);
+        const { wrapper } = setupComponent(ComponentWithMetaHandler);
         const component = wrapper.find(Component);
 
         it('should handle withSuccessHandler()', async () => {
@@ -356,4 +357,42 @@ describe('With Async Client HOC', () => {
             expect(component.props().action).toHaveBeenCalledTimes(3);
         });
     });
+
+    describe('withAsyncActions( action.withSaga )', () => {
+        let fn = jest.fn();
+        let actionFn = jest.fn();
+        let notFn = jest.fn();
+        let saga = function* (props) {
+            fn(props);
+            yield take(FIRST_ACTION);
+            const state = yield select(firstAction.selectData);
+            actionFn(state);
+            yield take('AFTER_UNMOUNT');
+            notFn();
+        };
+
+        const ComponentWithSaga = withAsyncActions({
+            firstAction: firstAction.withSaga(saga),
+        })(Component);
+
+        const { wrapper, store } = setupComponent(ComponentWithSaga);
+        const component = wrapper.find(Component);
+
+        it('should register saga with props on component mount', () => {
+            expect(fn).toHaveBeenCalledWith(component.props());
+        });
+
+        it('should listen store actions and select store', () => {
+            component.props().firstAction.dispatch('asd');
+            expect(actionFn).toHaveBeenCalledWith('asd');
+        });
+
+        it('should unregister saga on component unmount', () => {
+            wrapper.unmount();
+            store.dispatch({
+                type: 'AFTER_UNMOUNT',
+            });
+            expect(notFn).toHaveBeenCalledTimes(0);
+        })
+    })
 });

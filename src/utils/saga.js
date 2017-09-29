@@ -27,3 +27,16 @@ export function* takeFirst(pattern, storedBy, saga, ...args) {
 
     return task;
 }
+
+var middleware = null;
+
+export function setSagaWiddleware(sagaMiddleware) {
+    middleware = sagaMiddleware;
+}
+
+export function runSaga(saga, ...args) {
+    if (!middleware) {
+        throw new Error('Before running a Saga, you must set the Saga middleware using setSagaMiddleware');
+    }
+    return middleware.run(saga, ...args);
+}

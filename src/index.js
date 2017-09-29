@@ -21,7 +21,8 @@ const getDefaultConfig = ({
     shouldUpdate,
     successHandler,
     errorHandler,
-    pendingHandler
+    pendingHandler,
+    saga,
 }) => ({
     params,
     defaultPayload,
@@ -29,7 +30,8 @@ const getDefaultConfig = ({
     shouldUpdate,
     successHandler,
     errorHandler,
-    pendingHandler
+    pendingHandler,
+    saga,
 });
 
 const createConfigurableAction = (action, config = {}) => {
@@ -98,3 +100,8 @@ export {
     toReset,
     createAction
 } from './actionHelpers';
+export {
+    takeFirst,
+    runSaga,
+    setSagaWiddleware
+} from './utils/saga'
