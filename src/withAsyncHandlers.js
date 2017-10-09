@@ -1,24 +1,46 @@
 import React, { Component } from 'react';
-import { forEachObjIndexed} from 'ramda';
+import { forEachObjIndexed, pathOr, pick, prop, when } from 'ramda';
+import { toSuccess, toError, toRequest } from './actionHelpers';
+import { takeEvery } from 'redux-saga/effects';
+import { withSagas } from './withSagas';
 
-export const withAsyncHandlers = asyncActionsHandlers => {
+const handlerTakers = {
+    successHandler: toSuccess,
+    errorHandler: toError,
+    pendingHandler: toRequest,
+};
+
+export const withAsyncHandlers = actions => {
     return WrappedComponent => class extends Component {
-        componentWillReceiveProps(nextProps) {
-            forEachObjIndexed((handlers, key) => {
-                if (this.props[key] && this.props[key].meta) {
-                    const { success : successHandler, error : errorHandler, pending : pendingHandler } = handlers;
-                    const { success, error, pending } = this.props[key].meta;
-                    const { meta } = nextProps[key];
+        constructor(props) {
+            super(props);
+            let sagas = [];
 
-                    if (successHandler && !success && meta.success) successHandler(this.props, nextProps);
-                    if (errorHandler && !error && meta.error) errorHandler(this.props, nextProps);
-                    if (pendingHandler && !pending && meta.pending) pendingHandler(this.props, nextProps);
-                }
-            }, asyncActionsHandlers);
+            forEachObjIndexed((action, actionName) => {
+                when(prop('saga'), action => {
+                    sagas.push(action.saga);
+                }, action);
+
+                const actionHandlers = pick(['successHandler', 'errorHandler', 'pendingHandler'], action);
+                forEachObjIndexed((handler, key) => {
+                    const actionType = pathOr(action.type, [actionName, 'type'], props);
+                    const toHandlerType = handlerTakers[key];
+
+                    if (handler && actionType && toHandlerType) {
+                        sagas.push(function* (getProps) {
+                            yield takeEvery(toHandlerType(actionType), function*() {
+                                yield handler(getProps());
+                            });
+                        });
+                    }
+                }, actionHandlers);
+            }, actions);
+
+            this.Component = withSagas(sagas)(WrappedComponent);
         }
 
         render() {
-            return <WrappedComponent {...this.props} />;
+            return <this.Component {...this.props} />;
         }
     };
 };
