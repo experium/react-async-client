@@ -1,13 +1,9 @@
 import React from 'react';
 import { mount } from 'enzyme';
-import { Provider } from 'react-redux';
+import { Provider, connect } from 'react-redux';
 
 import configureStore from '../test-utils/configureStore';
-import {
-    createAsyncAction,
-    withAsyncActions,
-    withAsyncHandlers
-} from '../../src/index';
+import { createAsyncAction, withAsyncActions, withAsyncHandlers } from '../../src/index';
 
 const ACTION = 'ACTION';
 
@@ -29,11 +25,7 @@ const Component = (props) => {
     const { action } = props;
 
     return (
-        <div>
-            { action.meta.pending && <span id="action">Loading</span> }
-            { action.meta.success && <span id="action">{action.data}</span> }
-            { action.meta.error && <span id="action">{action.meta.error}</span> }
-        </div>
+        <div>{ action.data }</div>
     );
 };
 const PropsProviderComponent = ({ store, AsyncComponent, ...props}) => (
@@ -69,17 +61,15 @@ describe('Async Client withHandlers HOC', () => {
     const metaHandler = propName => ({ [propName] : handler }) => handler();
 
     describe('withAsyncHandlers({ metaHandler })', () => {
-        const ComponentWithHandlers = withAsyncActions({
-            action: asyncAction.withSuccessHandler(metaHandler('successHandler'))
-        })(withAsyncHandlers({
+        const ComponentWithHandlers = withAsyncActions({ action: asyncAction })(withAsyncHandlers({
             action: {
-                success: metaHandler('successHandler'),
-                error: metaHandler('errorHandler'),
-                pending: metaHandler('pendingHandler')
+                successHandler: metaHandler('successHandler'),
+                errorHandler: metaHandler('errorHandler'),
+                pendingHandler: metaHandler('pendingHandler'),
             }
         })(Component));
 
-        const { wrapper, store } = setupComponent(ComponentWithHandlers);
+        const { wrapper } = setupComponent(ComponentWithHandlers);
         const component = wrapper.find(Component);
 
         it('should handle withSuccessHandler()', async () => {
@@ -89,7 +79,7 @@ describe('Async Client withHandlers HOC', () => {
             defer.resolve();
             await defer.promise.then();
 
-            expect(component.props().successHandler).toHaveBeenCalledTimes(2);
+            expect(component.props().successHandler).toHaveBeenCalledTimes(1);
         });
 
         it('should handle withErrorHandler()', async () => {

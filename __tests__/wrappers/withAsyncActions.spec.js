@@ -7,7 +7,7 @@ import {
     createAsyncAction,
     withAsyncActions
 } from '../../src/index';
-import { take, select} from 'redux-saga/effects';
+import { take, select } from 'redux-saga/effects';
 
 const FIRST_ACTION = 'FIRST_ACTION';
 const SECOND_ACTION = 'SECOND_ACTION';
@@ -362,8 +362,8 @@ describe('With Async Client HOC', () => {
         let fn = jest.fn();
         let actionFn = jest.fn();
         let notFn = jest.fn();
-        let saga = function* (props) {
-            fn(props);
+        let saga = function* (getProps) {
+            fn(getProps());
             yield take(FIRST_ACTION);
             const state = yield select(firstAction.selectData);
             actionFn(state);

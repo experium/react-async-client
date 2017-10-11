@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { compose, map, mapObjIndexed, is, assoc, forEachObjIndexed, fromPairs } from 'ramda';
 import { connect } from 'react-redux';
 import { getActionData, getActionMeta } from './asyncHelpers';
-import { runSaga } from './utils/saga';
-import { equals, merge, when, prop, forEach, invoker } from 'ramda';
+import { equals, merge, when, prop, forEach } from 'ramda';
+import { withAsyncHandlers } from './withAsyncHandlers';
 
 const defaultOptions = {
     connectData: true,
@@ -24,9 +24,15 @@ export const withAsyncActions = (actions, options = {}) => {
     return WrappedComponent => {
         const getActions = props => is(Function, actions) ? actions(props) : actions;
         let intervals = [];
-        let sagaTasks = [];
 
         const hoc = class extends Component {
+            constructor(props) {
+                super(props);
+                const actions = getActions(props);
+
+                this.Component = withAsyncHandlers(actions)(WrappedComponent);
+            }
+
             componentWillMount() {
                 const actions = getActions(this.props);
                 forEachObjIndexed((action, key) => when(prop('autoFetch'), (options) => {
@@ -38,10 +44,6 @@ export const withAsyncActions = (actions, options = {}) => {
                         }, options.pollInterval));
                     })(options);
                 })(merge(options, action.options)), actions);
-
-                forEachObjIndexed(when(prop('saga'), (action) => {
-                    sagaTasks.push(runSaga(action.saga, this.props));
-                }), actions);
             }
 
             componentWillReceiveProps(nextProps) {
@@ -54,28 +56,15 @@ export const withAsyncActions = (actions, options = {}) => {
                         nextProps[key].dispatch(getPayload && getPayload(nextProps));
                     }
                 })(merge(options, action.options)), getActions(this.props));
-
-                forEachObjIndexed((action, key) => {
-                    if (this.props[key].meta) {
-                        const { successHandler, errorHandler, pendingHandler } = action;
-                        const { success, error, pending } = this.props[key].meta;
-                        const { meta } = nextProps[key];
-
-                        if (successHandler && !success && meta.success) successHandler(this.props, nextProps);
-                        if (errorHandler && !error && meta.error) errorHandler(this.props, nextProps);
-                        if (pendingHandler && !pending && meta.pending) pendingHandler(this.props, nextProps);
-                    }
-                }, getActions(this.props));
             }
 
             componentWillUnmount() {
                 forEachObjIndexed((action, key) => when(prop('autoReset'), this.props[key].reset)(merge(options, action.options)), getActions(this.props));
                 forEach(clearInterval, intervals);
-                forEach(task => task.cancel(), sagaTasks);
             }
 
             render() {
-                return <WrappedComponent {...this.props} />
+                return <this.Component {...this.props} />;
             }
         }
 
@@ -113,6 +102,7 @@ export const withAsyncActions = (actions, options = {}) => {
                 ...ownProps,
                 ...mapObjIndexed((action, key) => {
                     return {
+                        type: action.type,
                         data: stateProps[key + '_data'],
                         meta: stateProps[key + '_meta'],
                         ...dispatchProps[key]

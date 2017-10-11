@@ -122,7 +122,7 @@ Usage example of `autoUpdate`, `autoFetch` and `autoReset` options:
 import { withAsyncActions } from 'experium-modules';
 import { getUser } from './actions';
 
-class User = ({ getUser }) => (
+const User = ({ getUser }) => (
     <div>
         { getUser.meta.success && getUser.data.name }
     </div>
@@ -145,6 +145,40 @@ You can have any count of `UserWithAsync` on page with different data becouse th
 but if you have two components with same id its bind to one source of data.
 If `props.id` of `UserWithAsync` component changed asyncClient reset data by previous id and fetch with new id.
 On componentWillUnmount component call `getUser.reset` and data by this component `props.id` removed from store.
+
+#### `withAsyncHandlers(actionsHandlers: {})` HOC
+`withAsyncHandlers` HOC creates component with handlers which would executes only if component is mount. It binds for action from parent props or if item of actionsHandlers is action.
+
+```javascript
+import { withAsyncHandlers } from 'experium-modules';
+import { postUser } from './actions';
+
+const UserList = () => (
+    <div>
+        User List Component with Modal
+    </div>
+);
+
+const UserWithAsync = withAsyncHandlers({
+    postUser: postUser.withSuccessHandler(props => console.log('user updated'))
+})(UserList);
+```
+
+#### `withSagas(sagas: [])` HOC
+`withSagas` HOC creates component with sagas which would executes only if component is mount.
+
+```javascript
+import { withSagas } from 'experium-modules';
+
+const Component = () => (
+    <div>Component</div>
+);
+
+const UserWithAsync = withSagas([function* (getProps) {
+    yield take(ACTION);
+    yield take(ACTION_SUCCESS);
+}])(Component);
+```
 
 # Action Helpers
 #### `toError(actionType)`
