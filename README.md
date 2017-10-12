@@ -1,4 +1,5 @@
 # React async client
+[![Build Status](https://travis-ci.org/experium/react-async-client.svg?branch=master)](https://travis-ci.org/experium/react-async-client)
 
 #### `createAsyncAction(actionName, handler, initialState = undefined, sagaTaker = takeLatest)`
 The function creates an action, a saga, a data reducer and a meta reducer.
