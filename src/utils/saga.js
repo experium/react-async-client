@@ -30,7 +30,7 @@ export function* takeFirst(pattern, storedBy, saga, ...args) {
 
 var middleware = null;
 
-export function setSagaWiddleware(sagaMiddleware) {
+export function setSagaMiddleware(sagaMiddleware) {
     middleware = sagaMiddleware;
 }
 

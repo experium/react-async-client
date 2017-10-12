@@ -104,5 +104,5 @@ export {
 export {
     takeFirst,
     runSaga,
-    setSagaWiddleware
+    setSagaMiddleware
 } from './utils/saga'

@@ -1,7 +1,7 @@
 import { applyMiddleware, createStore, combineReducers } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import { all } from 'redux-saga/effects';
-import { setSagaWiddleware } from '../../src/utils/saga';
+import { setSagaMiddleware } from '../../src/utils/saga';
 import { getAsyncReducers, getAsyncSagas } from '../../src';
 
 const sagaMiddleware = createSagaMiddleware();
@@ -22,7 +22,7 @@ export default function configureStore(initialState = {}) {
         ]);
     });
 
-    setSagaWiddleware(sagaMiddleware);
+    setSagaMiddleware(sagaMiddleware);
 
     return store;
 };
