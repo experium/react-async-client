@@ -18,3 +18,5 @@ export const getData = type => (action, state) => {
 
 export const getActionData = getData('data');
 export const getActionMeta = getData('meta');
+
+export const getActions = (props, actions) => is(Function, actions) ? actions(props) : actions;

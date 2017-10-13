@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { forEachObjIndexed, pathOr, pick, prop, when } from 'ramda';
+import { forEachObjIndexed, keys, pathOr, pick, prop, when } from 'ramda';
 import { toSuccess, toError, toRequest } from './actionHelpers';
+import { getActions } from './asyncHelpers';
 import { takeEvery } from 'redux-saga/effects';
 import { withSagas } from './withSagas';
 
@@ -9,11 +10,13 @@ const handlerTakers = {
     errorHandler: toError,
     pendingHandler: toRequest,
 };
+const handlerProps = keys(handlerTakers);
 
-export const withAsyncHandlers = actions => {
+export const withAsyncHandlers = actionsConfig => {
     return WrappedComponent => class extends Component {
         constructor(props) {
             super(props);
+            const actions = getActions(props, actionsConfig);
             let sagas = [];
 
             forEachObjIndexed((action, actionName) => {
@@ -21,7 +24,7 @@ export const withAsyncHandlers = actions => {
                     sagas.push(action.saga);
                 }, action);
 
-                const actionHandlers = pick(['successHandler', 'errorHandler', 'pendingHandler'], action);
+                const actionHandlers = pick(handlerProps, action);
                 forEachObjIndexed((handler, key) => {
                     const actionType = pathOr(action.type, [actionName, 'type'], props);
                     const toHandlerType = handlerTakers[key];

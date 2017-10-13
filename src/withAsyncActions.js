@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { compose, map, mapObjIndexed, is, assoc, forEachObjIndexed, fromPairs } from 'ramda';
+import { compose, map, mapObjIndexed, assoc, forEachObjIndexed, fromPairs } from 'ramda';
 import { connect } from 'react-redux';
-import { getActionData, getActionMeta } from './asyncHelpers';
+import { getActionData, getActionMeta, getActions } from './asyncHelpers';
 import { equals, merge, when, prop, forEach } from 'ramda';
 import { withAsyncHandlers } from './withAsyncHandlers';
 
@@ -18,23 +18,15 @@ const defaultShouldUpdate = (props, nextProps, action) => {
     return !equals(action.defaultPayload(props), action.defaultPayload(nextProps));
 }
 
-export const withAsyncActions = (actions, options = {}) => {
+export const withAsyncActions = (actionsConfig, options = {}) => {
     options = merge(defaultOptions, options);
 
     return WrappedComponent => {
-        const getActions = props => is(Function, actions) ? actions(props) : actions;
         let intervals = [];
 
         const hoc = class extends Component {
-            constructor(props) {
-                super(props);
-                const actions = getActions(props);
-
-                this.Component = withAsyncHandlers(actions)(WrappedComponent);
-            }
-
             componentWillMount() {
-                const actions = getActions(this.props);
+                const actions = getActions(this.props, actionsConfig);
                 forEachObjIndexed((action, key) => when(prop('autoFetch'), (options) => {
                     const getPayload = action.defaultPayload;
                     this.props[key].dispatch(getPayload && getPayload(this.props));
@@ -55,16 +47,21 @@ export const withAsyncActions = (actions, options = {}) => {
                         const getPayload = action.defaultPayload;
                         nextProps[key].dispatch(getPayload && getPayload(nextProps));
                     }
-                })(merge(options, action.options)), getActions(this.props));
+                })(merge(options, action.options)), getActions(this.props, actionsConfig));
             }
 
             componentWillUnmount() {
-                forEachObjIndexed((action, key) => when(prop('autoReset'), this.props[key].reset)(merge(options, action.options)), getActions(this.props));
+                forEachObjIndexed(
+                    (action, key) => when(prop('autoReset'), this.props[key].reset)(
+                        merge(options, action.options)
+                    ),
+                    getActions(this.props, actionsConfig)
+                );
                 forEach(clearInterval, intervals);
             }
 
             render() {
-                return <this.Component {...this.props} />;
+                return <WrappedComponent {...this.props} />;
             }
         }
 
@@ -78,7 +75,7 @@ export const withAsyncActions = (actions, options = {}) => {
                 if (actionOptions.connectMeta) {
                     items.push([actionName + '_meta', getActionMeta(action, state)]);
                 }
-            }, getActions(props));
+            }, getActions(props, actionsConfig));
             return fromPairs(items);
         };
 
@@ -94,7 +91,7 @@ export const withAsyncActions = (actions, options = {}) => {
                     error: compose(dispatch, assoc('params', action.params), action.error),
                     reset: compose(dispatch, assoc('params', action.params), action.reset)
                 }
-            }, getActions(props));
+            }, getActions(props, actionsConfig));
         };
 
         const mergeProps = (stateProps, dispatchProps, ownProps) => {
@@ -107,10 +104,12 @@ export const withAsyncActions = (actions, options = {}) => {
                         meta: stateProps[key + '_meta'],
                         ...dispatchProps[key]
                     }
-                }, getActions(ownProps))
+                }, getActions(ownProps, actionsConfig))
             }
         };
 
-        return connect(stateToProps, dispatchToProps, mergeProps)(hoc);
+        return connect(stateToProps, dispatchToProps, mergeProps)(
+            withAsyncHandlers(actionsConfig)(hoc)
+        );
     }
 }
