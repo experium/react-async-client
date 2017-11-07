@@ -1,25 +1,12 @@
 import React from 'react';
 import { mount } from 'enzyme';
-import { Provider, connect } from 'react-redux';
+import { Provider } from 'react-redux';
 
 import configureStore from '../test-utils/configureStore';
+import { createPromise } from '../test-utils/promiseHandlers';
 import { createAsyncAction, withAsyncActions, withAsyncHandlers } from '../../src/index';
 
 const ACTION = 'ACTION';
-
-const createPromise = (data, error) => {
-    let resolve, reject;
-    const promise = new Promise((resolver, rejector) => {
-        resolve = () => resolver(data);
-        reject = () => rejector(error);
-    });
-
-    return {
-        resolve,
-        reject,
-        promise
-    };
-}
 
 const Component = (props) => {
     const { action } = props;

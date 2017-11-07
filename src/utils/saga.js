@@ -1,24 +1,21 @@
 import { take, fork, join } from 'redux-saga/effects';
-import append from 'ramda/src/append';
-import contains from 'ramda/src/contains';
-import not from 'ramda/src/not';
-import without from 'ramda/src/without';
+import { append, contains, not, prop, without } from 'ramda';
 
-export function* takeFirst(pattern, storedBy, saga, ...args) {
+export const createTakeFirst = storedBy => function*(pattern, saga, ...args) {
     const task = yield fork(function*() {
-        let firstTasks = [];
+        let takedParams = [];
         /* eslint-disable no-loop-func */
         while (true) {
             const action = yield take(pattern);
             const params = storedBy(action);
-            if (not(contains(params, firstTasks))) {
-                firstTasks = append(params, firstTasks);
+
+            if (not(contains(params, takedParams))) {
+                takedParams = append(params, takedParams);
                 const firstTask = yield fork(saga, ...args.concat(action));
+
                 yield fork(function*() {
-                    const { error } = yield join(firstTask);
-                    if (error) {
-                        firstTasks = without([params], firstTasks);
-                    }
+                    yield join(firstTask);
+                    takedParams = without([params], takedParams);
                 });
             }
         }
@@ -27,6 +24,9 @@ export function* takeFirst(pattern, storedBy, saga, ...args) {
 
     return task;
 }
+
+export const takeFirst = createTakeFirst(prop('type'));
+export const asyncTakeFirst = createTakeFirst(prop('params'));
 
 var middleware = null;
 
