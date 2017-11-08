@@ -3,6 +3,7 @@ import { mount } from 'enzyme';
 import { Provider } from 'react-redux';
 
 import configureStore from '../test-utils/configureStore';
+import { createPromise } from '../test-utils/promiseHandlers';
 import {
     createAsyncAction,
     withAsyncActions
@@ -16,20 +17,6 @@ const THIRD_ACTION = 'THIRD_ACTION';
 const firstLoader = 'Loading 1';
 const secondLoader = 'Loading 2';
 const emptyDispatch = 'Empty dispatch';
-
-const createPromise = (data, error) => {
-    let resolve, reject;
-    const promise = new Promise((resolver, rejector) => {
-        resolve = () => resolver(data);
-        reject = () => rejector(error);
-    });
-
-    return {
-        resolve,
-        reject,
-        promise
-    };
-}
 
 const Component = (props) => {
     const { firstAction: first, secondAction: second } = props;

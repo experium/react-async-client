@@ -1,6 +1,9 @@
 {
   "extends": "react-app",
   "rules": {
-        "no-unused-vars": ["error", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }]
-    }
+    "no-unused-vars": ["error", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
+    "no-console": "warn",
+    "eol-last": "warn",
+    "no-trailing-spaces": "warn"
+  }
 }

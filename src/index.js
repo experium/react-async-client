@@ -101,8 +101,4 @@ export {
     toReset,
     createAction
 } from './actionHelpers';
-export {
-    takeFirst,
-    runSaga,
-    setSagaMiddleware
-} from './utils/saga'
+export * from './utils/saga'
