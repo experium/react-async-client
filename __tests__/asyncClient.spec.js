@@ -189,7 +189,7 @@ describe('Async Client', () => {
                 type: toRequest(FIRST_ACTION)
             };
             const state = {
-                [noParamsKey]: { pending: true, success: false, error: false }
+                [noParamsKey]: { pending: true, success: false, error: false, lastSucceedAt: null }
             };
 
             expect(metaReducer({}, action)).toEqual(state);
@@ -204,7 +204,7 @@ describe('Async Client', () => {
                 }
             };
             const id = getPath(action.params);
-            const state = { [id]: { pending: true, success: false, error: false } };
+            const state = { [id]: { pending: true, success: false, error: false, lastSucceedAt: null } };
 
             expect(metaReducer({}, action)).toEqual(state);
         });
@@ -215,7 +215,7 @@ describe('Async Client', () => {
                 payload: 'error'
             };
             const state = {
-                [noParamsKey]: { pending: false, success: false, error: 'error' }
+                [noParamsKey]: { pending: false, success: false, error: 'error', lastSucceedAt: null }
             };
 
             expect(metaReducer({}, action)).toEqual(state);
@@ -231,7 +231,7 @@ describe('Async Client', () => {
                 }
             };
             const id = getPath(action.params);
-            const state = { [id]: { pending: false, success: false, error: 'error' } };
+            const state = { [id]: { pending: false, success: false, error: 'error', lastSucceedAt: null } };
 
             expect(metaReducer({}, action)).toEqual(state);
         });
