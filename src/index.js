@@ -3,7 +3,7 @@ import { isEmpty, mapObjIndexed } from 'ramda';
 import { capitalize } from './utils/ramdaAdditions';
 
 import { createAction } from './actionHelpers';
-import { getActionData, getActionMeta } from './asyncHelpers';
+import { getActionData, getActionMeta, noParamsKey, defaultKey } from './asyncHelpers';
 import { setActionHandler } from './utils/doAction';
 import noParamsReducer from './noParamsReducer';
 import createHttpReducer from './createHttpReducer';
@@ -91,6 +91,7 @@ function getAsyncReducers() {
 }
 
 export { createAsyncAction, getAsyncSagas, getAsyncReducers, noParamsReducer };
+export { noParamsKey, defaultKey };
 export { withAsyncActions } from './withAsyncActions';
 export { withAsyncHandlers } from './withAsyncHandlers';
 export { withSagas } from './withSagas';
