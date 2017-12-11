@@ -44,15 +44,15 @@ describe('Async Client withHandlers HOC', () => {
     const errorHandler = jest.fn();
     const successHandler = jest.fn();
 
-    const setupComponent = (Component) => setup({ pendingHandler, errorHandler, successHandler }, Component);
-    const metaHandler = propName => ({ [propName] : handler }) => handler();
+    const setupComponent = (Component) => setup({}, Component);
+    const metaHandler = handler => (props, action) => handler(props, action);
 
     describe('withAsyncHandlers({ metaHandler })', () => {
         const ComponentWithHandlers = withAsyncActions({ action: asyncAction })(withAsyncHandlers({
             action: {
-                successHandler: metaHandler('successHandler'),
-                errorHandler: metaHandler('errorHandler'),
-                pendingHandler: metaHandler('pendingHandler'),
+                successHandler: metaHandler(successHandler),
+                errorHandler: metaHandler(errorHandler),
+                pendingHandler: metaHandler(pendingHandler),
             }
         })(Component));
 
@@ -66,7 +66,7 @@ describe('Async Client withHandlers HOC', () => {
             defer.resolve();
             await defer.promise.then();
 
-            expect(component.props().successHandler).toHaveBeenCalledTimes(1);
+            expect(successHandler).toHaveBeenCalledTimes(1);
         });
 
         it('should handle withErrorHandler()', async () => {
@@ -77,12 +77,24 @@ describe('Async Client withHandlers HOC', () => {
             try {
                 await defer.promise.catch();
             } catch(e) {
-                expect(component.props().errorHandler).toHaveBeenCalledTimes(1);
+                expect(errorHandler).toHaveBeenCalledTimes(1);
             }
         });
 
         it('should handle withPendingHandler()', async () => {
-            expect(component.props().pendingHandler).toHaveBeenCalledTimes(2);
+            expect(pendingHandler).toHaveBeenCalledTimes(2);
         });
+
+        it('should pass action to handler', async () => {
+            component.props().action.dispatch('action_payload');
+            expect(pendingHandler).lastCalledWith(
+                expect.anything(),
+                expect.objectContaining({
+                    requestAction: expect.objectContaining({
+                        payload: 'action_payload',
+                    })
+                })
+            );
+        })
     });
 });

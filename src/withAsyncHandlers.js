@@ -31,8 +31,8 @@ export const withAsyncHandlers = actionsConfig => {
 
                     if (handler && actionType && toHandlerType) {
                         sagas.push(function* (getProps) {
-                            yield takeEvery(toHandlerType(actionType), function*() {
-                                yield handler(getProps());
+                            yield takeEvery(toHandlerType(actionType), function*(takedAction) {
+                                yield handler(getProps(), takedAction);
                             });
                         });
                     }
