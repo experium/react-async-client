@@ -271,7 +271,7 @@ describe('With Async Client HOC', () => {
     describe('withAsyncActions( ... action.withParams().withPayload() ...)', () => {
         const ComponentWithAsync = withAsyncActions(({ first }) => ({
             firstAction: firstAction.withParams({ first }).withPayload(({ first }) => first),
-        }), {dispatchOnMount: true, resetOnUnmount: true, dispatchOnUpdate: true})(Component);
+        }), {dispatchOnMount: true, resetOnUpdate: true, resetOnUnmount: true, dispatchOnUpdate: true})(Component);
 
         const { wrapper, store } = setupComponent(ComponentWithAsync);
         const component = wrapper.find(Component);

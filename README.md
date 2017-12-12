@@ -55,6 +55,7 @@ Options object could had these properties:
 * `dispatchOnMount (bool)` - call `action.dispatch(payload)` on `componentWillMount`
 * `dispatchOnUpdate (bool)` - will call  `action.dispatch(payload)` with nextProps
 if `withPayload(this.props)` doesnt equals `withPayload(nextProps)` on `componentWillReceiveProps`
+* `resetOnUpdate (bool)` - call `action.reset()` in `dispatchOnUpdate` `componentWillReceiveProps`
 * `resetOnUnmount (bool)` - call `action.reset()` on `componentWillUnmount`
 
 Return extended component that in props have action object with these properties:

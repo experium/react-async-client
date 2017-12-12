@@ -43,10 +43,12 @@ export const withAsyncActions = (actionsConfig, options = {}) => {
             }
 
             componentWillReceiveProps(nextProps) {
-                forEachObjIndexed((action, key) => when(prop('dispatchOnUpdate'), () => {
+                forEachObjIndexed((action, key) => when(prop('dispatchOnUpdate'), (options) => {
                     const shouldUpdate = action.shouldUpdate || defaultShouldUpdate;
                     if (shouldUpdate(this.props, nextProps, action)) {
-                        this.props[key].reset();
+                        if (options.resetOnUpdate) {
+                            this.props[key].reset();
+                        }
 
                         const getPayload = action.defaultPayload;
                         nextProps[key].dispatch(getPayload && getPayload(nextProps));
