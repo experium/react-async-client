@@ -175,11 +175,11 @@ describe('With Async Client HOC', () => {
         });
     });
 
-    describe('withAsyncActions({}, { autoFetch, autoReset})', () => {
+    describe('withAsyncActions({}, { dispatchOnMount, resetOnUnmount })', () => {
         const ComponentWithAsync = withAsyncActions({
             firstAction,
             secondAction,
-        }, {autoFetch: true, autoReset: true})(Component);
+        }, {dispatchOnMount: true, resetOnUnmount: true})(Component);
 
         const { wrapper, store } = setupComponent(ComponentWithAsync);
         const component = wrapper.find(Component);
@@ -198,11 +198,11 @@ describe('With Async Client HOC', () => {
         });
     });
 
-    describe('withAsyncActions({ shouldUpdate }, { autoUpdate })', () => {
+    describe('withAsyncActions({ shouldUpdate }, { dispatchOnUpdate })', () => {
         const ComponentWithAsync = withAsyncActions({
             firstAction: firstAction.withShouldUpdate(({ waitForFirst }, { waitForFirst: nextWaitForFirst }) => !waitForFirst && nextWaitForFirst),
             secondAction: secondAction.withShouldUpdate(({ waitForSecond }, { waitForSecond: nextWaitForSecond }) => !waitForSecond && nextWaitForSecond),
-        }, {autoFetch: false, autoUpdate: true, autoReset: true})(Component);
+        }, {dispatchOnUpdate: true, resetOnUnmount: true})(Component);
 
         const { wrapper } = setup({ waitForFirst: false, waitForSecond: false }, ComponentWithAsync);
         const component = wrapper.find(Component);
@@ -227,11 +227,11 @@ describe('With Async Client HOC', () => {
         });
     });
 
-    describe('withAsyncActions(() => {}, { autoUpdate })', () => {
+    describe('withAsyncActions(() => {}, { dispatchOnUpdate })', () => {
         const ComponentWithAsync = withAsyncActions(({ first }) => ({
             firstAction: firstAction.withParams({ first }),
             secondAction: secondAction.withPayload(({ second }) => second),
-        }), {autoFetch: true, autoReset: true, autoUpdate: true})(Component);
+        }), {dispatchOnMount: true, resetOnUnmount: true, dispatchOnUpdate: true})(Component);
 
         const { wrapper, store } = setupComponent(ComponentWithAsync);
         const component = wrapper.find(Component);
@@ -271,7 +271,7 @@ describe('With Async Client HOC', () => {
     describe('withAsyncActions( ... action.withParams().withPayload() ...)', () => {
         const ComponentWithAsync = withAsyncActions(({ first }) => ({
             firstAction: firstAction.withParams({ first }).withPayload(({ first }) => first),
-        }), {autoFetch: true, autoReset: true, autoUpdate: true})(Component);
+        }), {dispatchOnMount: true, resetOnUpdate: true, resetOnUnmount: true, dispatchOnUpdate: true})(Component);
 
         const { wrapper, store } = setupComponent(ComponentWithAsync);
         const component = wrapper.find(Component);

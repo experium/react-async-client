@@ -27,22 +27,28 @@ export const withAsyncActions = (actionsConfig, options = {}) => {
         const hoc = class extends Component {
             componentWillMount() {
                 const actions = getActions(this.props, actionsConfig);
-                forEachObjIndexed((action, key) => when(prop('autoFetch'), (options) => {
-                    const getPayload = action.defaultPayload;
-                    this.props[key].dispatch(getPayload && getPayload(this.props));
-                    when(prop('pollInterval'), () => {
-                        intervals.push(setInterval(() => {
-                            this.props[key].dispatch(getPayload && getPayload(this.props));
-                        }, options.pollInterval));
-                    })(options);
-                })(merge(options, action.options)), actions);
+                forEachObjIndexed((action, key) => {
+                    const actionOptions = merge(options, action.options);
+                    when(prop('resetOnMount'), this.props[key].reset)(actionOptions);
+                    when(prop('dispatchOnMount'), (options) => {
+                        const getPayload = action.defaultPayload;
+                        this.props[key].dispatch(getPayload && getPayload(this.props));
+                        when(prop('pollInterval'), () => {
+                            intervals.push(setInterval(() => {
+                                this.props[key].dispatch(getPayload && getPayload(this.props));
+                            }, options.pollInterval));
+                        })(options);
+                    })(actionOptions);
+                }, actions);
             }
 
             componentWillReceiveProps(nextProps) {
-                forEachObjIndexed((action, key) => when(prop('autoUpdate'), () => {
+                forEachObjIndexed((action, key) => when(prop('dispatchOnUpdate'), (options) => {
                     const shouldUpdate = action.shouldUpdate || defaultShouldUpdate;
                     if (shouldUpdate(this.props, nextProps, action)) {
-                        this.props[key].reset();
+                        if (options.resetOnUpdate) {
+                            this.props[key].reset();
+                        }
 
                         const getPayload = action.defaultPayload;
                         nextProps[key].dispatch(getPayload && getPayload(nextProps));
@@ -52,7 +58,7 @@ export const withAsyncActions = (actionsConfig, options = {}) => {
 
             componentWillUnmount() {
                 forEachObjIndexed(
-                    (action, key) => when(prop('autoReset'), this.props[key].reset)(
+                    (action, key) => when(prop('resetOnUnmount'), this.props[key].reset)(
                         merge(options, action.options)
                     ),
                     getActions(this.props, actionsConfig)
