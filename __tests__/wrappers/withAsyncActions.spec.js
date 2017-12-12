@@ -39,8 +39,7 @@ const PropsProviderComponent = ({ store, AsyncComponent, ...props}) => (
     </Provider>
 );
 
-const setup = ({first, second, action, ...props} = {}, AsyncComponent) => {
-    const store = configureStore({});
+const setup = ({first, second, action, ...props} = {}, AsyncComponent, store = configureStore({})) => {
     const wrapper = mount(
         <PropsProviderComponent store={store} first={first} second={second} action={action} {...props} AsyncComponent={AsyncComponent}/>
     );
@@ -59,7 +58,7 @@ describe('With Async Client HOC', () => {
     const secondData = '2';
     const action = jest.fn();
 
-    const setupComponent = (Component) => setup({first: firstData, second: secondData, action}, Component);
+    const setupComponent = (Component, store) => setup({first: firstData, second: secondData, action}, Component, store);
 
     describe('withAsyncActions() renders', () => {
         const createAndSetupComponent = (actions) => {
@@ -115,7 +114,28 @@ describe('With Async Client HOC', () => {
             });
             store.dispatch(firstAction());
             expect(getRendersCount()).toEqual(3);
-        })
+        });
+
+        it('should skip extra render', () => {
+            const { store, getRendersCount } = createAndSetupComponent({
+                firstAction: firstAction.withOptions({
+                    dispatchOnMount: true,
+                }),
+            });
+            store.dispatch(firstAction());
+            expect(getRendersCount()).toEqual(3);
+        });
+
+        it('should not skip extra render', () => {
+            const { store, getRendersCount } = createAndSetupComponent({
+                firstAction: firstAction.withOptions({
+                    dispatchOnMount: true,
+                    skipExtraRender: false,
+                }),
+            });
+            store.dispatch(firstAction());
+            expect(getRendersCount()).toEqual(4);
+        });
     });
 
     describe('withAsyncActions({}) manual dispatch actions', () => {
@@ -175,11 +195,11 @@ describe('With Async Client HOC', () => {
         });
     });
 
-    describe('withAsyncActions({}, { autoFetch, autoReset})', () => {
+    describe('withAsyncActions({}, { dispatchOnMount, resetOnUnmount})', () => {
         const ComponentWithAsync = withAsyncActions({
             firstAction,
             secondAction,
-        }, {autoFetch: true, autoReset: true})(Component);
+        }, {dispatchOnMount: true, resetOnUnmount: true})(Component);
 
         const { wrapper, store } = setupComponent(ComponentWithAsync);
         const component = wrapper.find(Component);
@@ -198,11 +218,26 @@ describe('With Async Client HOC', () => {
         });
     });
 
-    describe('withAsyncActions({ shouldUpdate }, { autoUpdate })', () => {
+    describe('withAsyncActions({}, { resetOnUnmount })', () => {
+        const ComponentWithAsync = withAsyncActions({
+            firstAction,
+        }, {resetOnMount: true})(Component);
+
+        const store = configureStore({});
+        store.dispatch(firstAction.success('noreset'));
+        const { wrapper } = setupComponent(ComponentWithAsync, store);
+        const component = wrapper.find(Component);
+
+        it('should not render previous data', () => {
+            expect(component.find('#first').length).toEqual(0);
+        });
+    });
+
+    describe('withAsyncActions({ shouldUpdate }, { dispatchOnUpdate })', () => {
         const ComponentWithAsync = withAsyncActions({
             firstAction: firstAction.withShouldUpdate(({ waitForFirst }, { waitForFirst: nextWaitForFirst }) => !waitForFirst && nextWaitForFirst),
             secondAction: secondAction.withShouldUpdate(({ waitForSecond }, { waitForSecond: nextWaitForSecond }) => !waitForSecond && nextWaitForSecond),
-        }, {autoFetch: false, autoUpdate: true, autoReset: true})(Component);
+        }, {dispatchOnMount: false, dispatchOnUpdate: true, resetOnUnmount: true})(Component);
 
         const { wrapper } = setup({ waitForFirst: false, waitForSecond: false }, ComponentWithAsync);
         const component = wrapper.find(Component);
@@ -227,11 +262,11 @@ describe('With Async Client HOC', () => {
         });
     });
 
-    describe('withAsyncActions(() => {}, { autoUpdate })', () => {
+    describe('withAsyncActions(() => {}, { dispatchOnUpdate })', () => {
         const ComponentWithAsync = withAsyncActions(({ first }) => ({
             firstAction: firstAction.withParams({ first }),
             secondAction: secondAction.withPayload(({ second }) => second),
-        }), {autoFetch: true, autoReset: true, autoUpdate: true})(Component);
+        }), {dispatchOnMount: true, resetOnUnmount: true, dispatchOnUpdate: true})(Component);
 
         const { wrapper, store } = setupComponent(ComponentWithAsync);
         const component = wrapper.find(Component);
@@ -271,7 +306,7 @@ describe('With Async Client HOC', () => {
     describe('withAsyncActions( ... action.withParams().withPayload() ...)', () => {
         const ComponentWithAsync = withAsyncActions(({ first }) => ({
             firstAction: firstAction.withParams({ first }).withPayload(({ first }) => first),
-        }), {autoFetch: true, autoReset: true, autoUpdate: true})(Component);
+        }), {dispatchOnMount: true, resetOnUnmount: true, dispatchOnUpdate: true, resetOnUpdate: true})(Component);
 
         const { wrapper, store } = setupComponent(ComponentWithAsync);
         const component = wrapper.find(Component);

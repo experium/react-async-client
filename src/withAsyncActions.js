@@ -3,11 +3,18 @@ import { compose, map, mapObjIndexed, assoc, forEachObjIndexed, fromPairs } from
 import { connect } from 'react-redux';
 import { getActionData, getActionMeta, getActions } from './asyncHelpers';
 import { equals, merge, when, prop, forEach } from 'ramda';
+import { renameKeys } from './utils/ramdaAdditions';
 import { withAsyncHandlers } from './withAsyncHandlers';
 
 const defaultOptions = {
     connectData: true,
     connectMeta: true,
+    resetOnMount: false,
+    resetOnUpdate: false,
+    resetOnUnmount: false,
+    dispatchOnMount: false,
+    dispatchOnUpdate: false,
+    skipExtraRender: true,
 };
 
 const defaultShouldUpdate = (props, nextProps, action) => {
@@ -18,50 +25,72 @@ const defaultShouldUpdate = (props, nextProps, action) => {
     return !equals(action.defaultPayload(props), action.defaultPayload(nextProps));
 }
 
+const renameDeprecatedKeys = renameKeys({
+    autoFetch: 'dispatchOnMount',
+    autoUpdate: 'dispatchOnUpdate',
+    autoReset: 'resetOnUnmount',
+});
+
 export const withAsyncActions = (actionsConfig, options = {}) => {
-    options = merge(defaultOptions, options);
+    options = merge(defaultOptions, renameDeprecatedKeys(options));
+    const getOptions = action => merge(options, renameDeprecatedKeys(action.options));
 
     return WrappedComponent => {
         let intervals = [];
 
         const hoc = class extends Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    skipRender: false,
+                };
+            }
+
             componentWillMount() {
                 const actions = getActions(this.props, actionsConfig);
-                forEachObjIndexed((action, key) => when(prop('autoFetch'), (options) => {
-                    const getPayload = action.defaultPayload;
-                    this.props[key].dispatch(getPayload && getPayload(this.props));
-                    when(prop('pollInterval'), () => {
-                        intervals.push(setInterval(() => {
-                            this.props[key].dispatch(getPayload && getPayload(this.props));
-                        }, options.pollInterval));
-                    })(options);
-                })(merge(options, action.options)), actions);
+                forEachObjIndexed((action, key) => {
+                    when(prop('dispatchOnMount'), (options) => {
+                        when(prop('skipExtraRender'), () => this.setState({ skipRender: true }))(options);
+                        const getPayload = action.defaultPayload;
+                        this.props[key].dispatch(getPayload && getPayload(this.props));
+                        when(prop('pollInterval'), () => {
+                            intervals.push(setInterval(() => {
+                                this.props[key].dispatch(getPayload && getPayload(this.props));
+                            }, options.pollInterval));
+                        })(options);
+                    })(getOptions(action));
+                    when(prop('resetOnMount'), (options) => {
+                        when(prop('skipExtraRender'), () => this.setState({ skipRender: true }))(options);
+                        this.props[key].reset();
+                    })(getOptions(action));
+                }, actions);
             }
 
             componentWillReceiveProps(nextProps) {
-                forEachObjIndexed((action, key) => when(prop('autoUpdate'), () => {
+                this.setState({
+                    skipRender: false,
+                })
+                forEachObjIndexed((action, key) => when(prop('dispatchOnUpdate'), (options) => {
                     const shouldUpdate = action.shouldUpdate || defaultShouldUpdate;
                     if (shouldUpdate(this.props, nextProps, action)) {
-                        this.props[key].reset();
+                        when(prop('resetOnUpdate'), this.props[key].reset)(options);
 
                         const getPayload = action.defaultPayload;
                         nextProps[key].dispatch(getPayload && getPayload(nextProps));
                     }
-                })(merge(options, action.options)), getActions(this.props, actionsConfig));
+                })(getOptions(action)), getActions(this.props, actionsConfig));
             }
 
             componentWillUnmount() {
                 forEachObjIndexed(
-                    (action, key) => when(prop('autoReset'), this.props[key].reset)(
-                        merge(options, action.options)
-                    ),
+                    (action, key) => when(prop('resetOnUnmount'), this.props[key].reset)(getOptions(action)),
                     getActions(this.props, actionsConfig)
                 );
                 forEach(clearInterval, intervals);
             }
 
             render() {
-                return <WrappedComponent {...this.props} />;
+                return this.state.skipRender ? null : <WrappedComponent {...this.props} />;
             }
         }
 

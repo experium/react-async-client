@@ -51,10 +51,13 @@ Actions object could had these properties:
 Actions getter function `actionsGetter(props) => object` used to bind props in action.
 
 Options object could had these properties:
-* `autoFetch (bool)` - call `action.dispatch(payload)` on `componentWillMount`
-* `autoUpdate (bool)` - will call `action.reset()` for previous action and `action.dispatch(payload)` with nextProps
-if `withPayload(this.props)` doesnt equals `withPayload(nextProps)` on `componentWillReceiveProps`
-* `autoReset (bool)` - call `action.reset()` on `componentWillUnmount`
+* `dispatchOnMount (bool)` - call `action.dispatch(payload)` on `componentWillMount`
+* `dispatchOnUpdate (bool)` - call `action.dispatch(payload)` with nextProps if `withPayload(this.props)` doesnt equals `withPayload(nextProps)` on `componentWillReceiveProps`
+* `resetOnUpdate (bool)` - will call `action.reset()` before dispatching when `dispatchOnUpdate` is `true`
+* `resetOnUnmount (bool)` - call `action.reset()` on `componentWillUnmount`
+* `resetOnMount (bool)` - call `action.reset(payload)` on `componentWillMount`
+* `skipExtraRender (bool)` - skip first render when using with `dispatchOnMount` or `resetOnMount`
+* `pollInterval (int)` - periodically dispatch action with `defaultPayload`
 
 Return extended component that in props have action object with these properties:
 * `dispatch (Function)` - call handler
