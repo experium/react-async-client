@@ -12,7 +12,7 @@ export default function createHttpReducer(actionName, defaultState = {}, customR
             case toSuccess(actionName):
                 return getState(payload);
             case toReset(actionName):
-                return omit(path, state);
+                return omit([path], state);
             default:
                 return state;
         }
