@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import { compose, map, mapObjIndexed, assoc, forEachObjIndexed, fromPairs } from 'ramda';
+import { compose, map, mapObjIndexed, assoc, forEachObjIndexed, fromPairs, is } from 'ramda';
 import { connect } from 'react-redux';
 import { getActionData, getActionMeta, getActions } from './asyncHelpers';
 import { equals, merge, when, prop, forEach } from 'ramda';
 import { renameKeys } from './utils/ramdaAdditions';
 import { withAsyncHandlers } from './withAsyncHandlers';
+import { bindActionCreators } from 'redux';
 
 const defaultOptions = {
     connectData: true,
@@ -31,7 +32,7 @@ const renameDeprecatedKeys = renameKeys({
     autoReset: 'resetOnUnmount',
 });
 
-export const withAsyncActions = (actionsConfig, options = {}) => {
+export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, mapDispatchToProps) => {
     options = merge(defaultOptions, renameDeprecatedKeys(options));
     const getOptions = action => merge(options, renameDeprecatedKeys(action.options));
 
@@ -105,11 +106,15 @@ export const withAsyncActions = (actionsConfig, options = {}) => {
                     items.push([actionName + '_meta', getActionMeta(action, state)]);
                 }
             }, getActions(props, actionsConfig));
+            if (mapStateToProps) {
+                items.push(['__connect', mapStateToProps(state, props)]);
+            }
+
             return fromPairs(items);
         };
 
         const dispatchToProps = (dispatch, props) => {
-            return map((action) => {
+            const actions =  map((action) => {
                 const dispatchAction = compose(dispatch, assoc('params', action.params), action);
                 const defaultPayload = action.defaultPayload && action.defaultPayload(props);
                 return {
@@ -121,6 +126,14 @@ export const withAsyncActions = (actionsConfig, options = {}) => {
                     reset: compose(dispatch, assoc('params', action.params), action.reset)
                 }
             }, getActions(props, actionsConfig));
+
+            if (is(Object, mapDispatchToProps)) {
+                mapDispatchToProps = bindActionCreators(mapDispatchToProps, dispatch);
+            } else {
+                mapDispatchToProps = mapDispatchToProps && mapDispatchToProps(dispatch, props);
+            }
+
+            return merge(actions, { __connect: mapDispatchToProps });
         };
 
         const mergeProps = (stateProps, dispatchProps, ownProps) => {
@@ -133,7 +146,9 @@ export const withAsyncActions = (actionsConfig, options = {}) => {
                         meta: stateProps[key + '_meta'],
                         ...dispatchProps[key]
                     }
-                }, getActions(ownProps, actionsConfig))
+                }, getActions(ownProps, actionsConfig)),
+                ...stateProps.__connect,
+                ...dispatchProps.__connect,
             }
         };
 
