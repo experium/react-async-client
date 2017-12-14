@@ -127,13 +127,11 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
                 }
             }, getActions(props, actionsConfig));
 
-            if (is(Object, mapDispatchToProps)) {
-                mapDispatchToProps = bindActionCreators(mapDispatchToProps, dispatch);
-            } else {
-                mapDispatchToProps = mapDispatchToProps && mapDispatchToProps(dispatch, props);
-            }
+            const connectDispatch = is(Object, mapDispatchToProps)
+                ? bindActionCreators(mapDispatchToProps, dispatch)
+                : mapDispatchToProps && mapDispatchToProps(dispatch, props);
 
-            return merge(actions, { __connect: mapDispatchToProps });
+            return merge(actions, { __connect: connectDispatch });
         };
 
         const mergeProps = (stateProps, dispatchProps, ownProps) => {
