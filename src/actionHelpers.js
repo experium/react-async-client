@@ -30,5 +30,10 @@ export const createAction = (type, staticPayload) => {
     action.success = compose(asSuccess, action);
     action.reset = compose(asReset, action);
 
+    action.errorType = toError(type);
+    action.requestType = toRequest(type);
+    action.successType = toSuccess(type);
+    action.resetType = toReset(type);
+
     return action;
 };

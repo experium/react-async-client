@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import { isEmpty, mapObjIndexed } from 'ramda';
+import { isEmpty, mapObjIndexed, pickAll } from 'ramda';
 import { capitalize } from './utils/ramdaAdditions';
 
 import { createAction } from './actionHelpers';
@@ -14,25 +14,16 @@ let sagas = [];
 let dataReducers = {};
 let metaReducers = {};
 
-const getDefaultConfig = ({
-    params,
-    defaultPayload,
-    options,
-    shouldUpdate,
-    successHandler,
-    errorHandler,
-    pendingHandler,
-    saga,
-}) => ({
-    params,
-    defaultPayload,
-    options,
-    shouldUpdate,
-    successHandler,
-    errorHandler,
-    pendingHandler,
-    saga,
-});
+const getDefaultConfig = pickAll([
+    'params',
+    'defaultPayload',
+    'options',
+    'shouldUpdate',
+    'successHandler',
+    'errorHandler',
+    'pendingHandler',
+    'saga',
+]);
 
 const createConfigurableAction = (action, config = {}) => {
     const newAction = createAction(action.type);
