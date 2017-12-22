@@ -15,7 +15,7 @@ const defaultOptions = {
     resetOnUnmount: false,
     dispatchOnMount: false,
     dispatchOnUpdate: false,
-    skipExtraRender: true,
+    skipExtraRender: false,
 };
 
 const defaultShouldUpdate = (props, nextProps, action) => {

@@ -120,6 +120,7 @@ describe('With Async Client HOC', () => {
             const { store, getRendersCount } = createAndSetupComponent({
                 firstAction: firstAction.withOptions({
                     dispatchOnMount: true,
+                    skipExtraRender: true,
                 }),
             });
             store.dispatch(firstAction());
