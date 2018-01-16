@@ -6,7 +6,8 @@ import {
     toSuccess,
     toReset,
     toRequest,
-    toError
+    toError,
+    toLoad,
 } from '../src/index';
 import noParamsReducer from '../src/noParamsReducer';
 import createHttpReducer from '../src/createHttpReducer';
@@ -49,6 +50,7 @@ describe('Async Client', () => {
             expect(firstAction.success).toBeDefined();
             expect(firstAction.request).toBeDefined();
             expect(firstAction.reset).toBeDefined();
+            expect(firstAction.load).toBeDefined();
             expect(firstAction.withParams).toBeDefined();
         });
 
@@ -232,6 +234,21 @@ describe('Async Client', () => {
             };
             const id = getPath(action.params);
             const state = { [id]: { pending: false, success: false, error: 'error', lastSucceedAt: null } };
+
+            expect(metaReducer({}, action)).toEqual(state);
+        });
+
+        it('should change on load', () => {
+            const date = (new Date).toISOString();
+            const action = {
+                type: toLoad(FIRST_ACTION),
+                payload: {},
+                attrs: {
+                    lastSucceedAt: date
+                }
+            };
+
+            const state = { [noParamsKey]: { lastSucceedAt: date } };
 
             expect(metaReducer({}, action)).toEqual(state);
         });

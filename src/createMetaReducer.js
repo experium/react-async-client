@@ -1,11 +1,11 @@
-import { toSuccess, toReset, toError, toRequest } from './actionHelpers';
+import { toSuccess, toReset, toError, toRequest, toLoad } from './actionHelpers';
 import { getPath, noParamsKey, defaultKey } from './asyncHelpers';
-import { assoc, pathOr } from 'ramda';
+import { assoc, assocPath, pathOr } from 'ramda';
 
 const defaultState = { pending: false, error: false, success: false, lastSucceedAt: null };
 
 export default function createMetaReducer(actionName) {
-    return (state = { [defaultKey]: defaultState }, { type, payload, params, requestAction }) => {
+    return (state = { [defaultKey]: defaultState }, { type, payload, params, attrs = {}, requestAction }) => {
         const param = pathOr(params || noParamsKey, ['params'], requestAction);
         const getLastSucceedAt = () => pathOr(null, [getPath(param), 'lastSucceedAt'], state);
 
@@ -23,6 +23,9 @@ export default function createMetaReducer(actionName) {
                 return getState(false, payload, false);
             case toReset(actionName):
                 return getState(false, false, false, null);
+            case toLoad(actionName):
+                const updateState = assocPath([getPath(param), 'lastSucceedAt'], attrs.lastSucceedAt);
+                return !getLastSucceedAt() || attrs.force ? updateState(state) : state;
             default:
                 return state;
         }

@@ -123,7 +123,8 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
                     request: compose(dispatch, assoc('params', action.params), action.request),
                     success: compose(dispatch, assoc('params', action.params), action.success),
                     error: compose(dispatch, assoc('params', action.params), action.error),
-                    reset: compose(dispatch, assoc('params', action.params), action.reset)
+                    reset: compose(dispatch, assoc('params', action.params), action.reset),
+                    load: compose(dispatch, assoc('params', action.params), action.load)
                 }
             }, getActions(props, actionsConfig));
 
