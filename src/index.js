@@ -88,6 +88,7 @@ export { withAsyncHandlers } from './withAsyncHandlers';
 export { withSagas } from './withSagas';
 export { asyncConnect } from './asyncConnect';
 export {
+    toLoad,
     toError,
     toRequest,
     toSuccess,

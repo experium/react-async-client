@@ -194,6 +194,24 @@ describe('With Async Client HOC', () => {
 
             expect(secondAction.selectData(state)).toEqual(secondData);
         });
+
+
+        it('should load data', () => {
+            const date = (new Date).toISOString();
+            component.props().secondAction.reset();
+            component.props().secondAction.load('loaded', {
+                lastSucceedAt: date,
+                force: false
+            });
+
+            const state = store.getState();
+
+            const data = secondAction.selectData(state);
+            const meta = secondAction.selectMeta(state);
+
+            expect(meta.lastSucceedAt).toEqual(date);
+            expect(data).toEqual('loaded');
+        });
     });
 
     describe('withAsyncActions({}, { dispatchOnMount, resetOnUnmount})', () => {

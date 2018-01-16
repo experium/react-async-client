@@ -1,13 +1,14 @@
 # React async client
 [![Build Status](https://travis-ci.org/experium/react-async-client.svg?branch=master)](https://travis-ci.org/experium/react-async-client)
 
-#### `createAsyncAction(actionName, handler, initialState = undefined, sagaTaker = takeLatest)`
+#### `createAsyncAction(actionName, handler, initialState = undefined, sagaTaker = takeLatest, customReducer = defaultReducer)`
 The function creates an action, a saga, a data reducer and a meta reducer.
 
 * `actionName (String)` - action name
 * `handler (Function)` - action handler
 * `initialState (any)` - reducer initial state
 * `sagaTaker (Function)` - saga effect function
+* `customReducer (Function)` - custom reducer function
 
 Usage example:
 ```javascript
@@ -62,6 +63,9 @@ Options object could had these properties:
 Return extended component that in props have action object with these properties:
 * `dispatch (Function)` - call handler
 * `reset (Function)` - reset reducer state
+* `error (Function)` - set error in reducer state
+* `success (Function)` - set data in reducer state
+* `load (Function)` - force set data in state
 * `data (any)` - action data
 * `meta (Object)` - action meta. Meta has `pending`, `success` and `error` properties.
 
@@ -189,6 +193,7 @@ const UserWithAsync = withSagas([function* (getProps) {
 #### `toRequest(actionType)`
 #### `toSuccess(actionType)`
 #### `toReset(actionType)`
+#### `toLoad(actionType)`
 Return action type name with state.
 * `actionType (string)` - action type name
 

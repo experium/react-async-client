@@ -7,6 +7,7 @@ export const toError = concat(__, '_ERROR');
 export const toRequest = concat(__, '_REQUEST');
 export const toSuccess = concat(__, '_SUCCESS');
 export const toReset = concat(__, '_RESET');
+export const toLoad = concat(__, '_LOAD');
 
 const setStatus = statusFn => evolve({ type: statusFn });
 
@@ -14,6 +15,7 @@ export const asError = setStatus(toError);
 export const asRequest = setStatus(toRequest);
 export const asSuccess = setStatus(toSuccess);
 export const asReset = setStatus(toReset);
+export const asLoad = setStatus(toLoad);
 
 export const createAction = (type, staticPayload) => {
     function action(payload = null, attrs = null) {
@@ -29,11 +31,13 @@ export const createAction = (type, staticPayload) => {
     action.request = compose(asRequest, action);
     action.success = compose(asSuccess, action);
     action.reset = compose(asReset, action);
+    action.load = compose(asLoad, action);
 
     action.errorType = toError(type);
     action.requestType = toRequest(type);
     action.successType = toSuccess(type);
     action.resetType = toReset(type);
+    action.loadType = toLoad(type);
 
     return action;
 };
