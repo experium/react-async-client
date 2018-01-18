@@ -47,8 +47,8 @@ const createConfigurableAction = (action, config = {}) => {
     // @deprecated
     newAction.withPayload = newAction.withDefaultPayload;
 
-    newAction.selectData = (state) => getActionData(newAction, state);
-    newAction.selectMeta = (state) => getActionMeta(newAction, state);
+    newAction.selectData = (state, props) => getActionData(newAction, state, props);
+    newAction.selectMeta = (state, props) => getActionMeta(newAction, state, props);
 
     return newAction;
 };

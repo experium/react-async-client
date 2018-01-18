@@ -100,10 +100,10 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
             forEachObjIndexed((action, actionName) => {
                 const actionOptions = merge(options, action.options || {});
                 if (actionOptions.connectData) {
-                    items.push([actionName + '_data', getActionData(action, state)]);
+                    items.push([actionName + '_data', getActionData(action, state, props)]);
                 }
                 if (actionOptions.connectMeta) {
-                    items.push([actionName + '_meta', getActionMeta(action, state)]);
+                    items.push([actionName + '_meta', getActionMeta(action, state, props)]);
                 }
             }, getActions(props, actionsConfig));
             if (mapStateToProps) {

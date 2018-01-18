@@ -4,11 +4,14 @@ export const noParamsKey = '__NO_PARAMS__';
 export const defaultKey = '__DEFAULT__';
 
 export const getPath = when(is(Object), compose(join('_'), flatten, toPairs));
+export const callWithProps = (objectOrFunction, props) => is(Function, objectOrFunction) ? objectOrFunction(props) : objectOrFunction;
+export const getActions = (props, actions) => callWithProps(actions, props);
 
-export const getData = type => (action, state) => {
+export const getData = type => (action, state, props) => {
     const dataPath = ['asyncClient', type, action.type];
 
-    const paramsPath = append(getPath(action.params || noParamsKey), dataPath);
+    const params = callWithProps(action.params, props);
+    const paramsPath = append(getPath(params || noParamsKey), dataPath);
     const defaultPath = append(defaultKey, dataPath);
 
     const data = path(paramsPath, state);
@@ -18,6 +21,3 @@ export const getData = type => (action, state) => {
 
 export const getActionData = getData('data');
 export const getActionMeta = getData('meta');
-
-export const callWithProps = (objectOrFunction, props) => is(Function, objectOrFunction) ? objectOrFunction(props) : objectOrFunction;
-export const getActions = (props, actions) => callWithProps(actions, props);
