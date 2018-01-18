@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { compose, map, mapObjIndexed, assoc, forEachObjIndexed, fromPairs, is } from 'ramda';
 import { connect } from 'react-redux';
-import { getActionData, getActionMeta, getActions } from './asyncHelpers';
+import { getActionData, getActionMeta, getActions, callWithProps } from './asyncHelpers';
 import { equals, merge, when, prop, forEach } from 'ramda';
 import { renameKeys } from './utils/ramdaAdditions';
 import { withAsyncHandlers } from './withAsyncHandlers';
@@ -34,7 +34,7 @@ const renameDeprecatedKeys = renameKeys({
 
 export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, mapDispatchToProps) => {
     options = merge(defaultOptions, renameDeprecatedKeys(options));
-    const getOptions = action => merge(options, renameDeprecatedKeys(action.options));
+    const getOptions = (action, props) => merge(options, renameDeprecatedKeys(callWithProps(action.options, props)));
 
     return WrappedComponent => {
         let intervals = [];
@@ -59,11 +59,11 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
                                 this.props[key].dispatch(getPayload && getPayload(this.props));
                             }, options.pollInterval));
                         })(options);
-                    })(getOptions(action));
+                    })(getOptions(action, this.props));
                     when(prop('resetOnMount'), (options) => {
                         when(prop('skipExtraRender'), () => this.setState({ skipRender: true }))(options);
                         this.props[key].reset();
-                    })(getOptions(action));
+                    })(getOptions(action, this.props));
                 }, actions);
             }
 
@@ -79,12 +79,12 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
                         const getPayload = action.defaultPayload;
                         nextProps[key].dispatch(getPayload && getPayload(nextProps));
                     }
-                })(getOptions(action)), getActions(this.props, actionsConfig));
+                })(getOptions(action, nextProps)), getActions(nextProps, actionsConfig));
             }
 
             componentWillUnmount() {
                 forEachObjIndexed(
-                    (action, key) => when(prop('resetOnUnmount'), this.props[key].reset)(getOptions(action)),
+                    (action, key) => when(prop('resetOnUnmount'), this.props[key].reset)(getOptions(action, this.props)),
                     getActions(this.props, actionsConfig)
                 );
                 forEach(clearInterval, intervals);
@@ -115,16 +115,19 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
 
         const dispatchToProps = (dispatch, props) => {
             const actions =  map((action) => {
-                const dispatchAction = compose(dispatch, assoc('params', action.params), action);
+                const params = callWithProps(action.params, props);
+                const assocParams = assoc('params', params);
+                const composeAction = action => compose(dispatch, assocParams, action);
+                const dispatchAction = composeAction(action);
                 const defaultPayload = action.defaultPayload && action.defaultPayload(props);
                 return {
                     refresh: (payload) => dispatchAction(payload || defaultPayload),
                     dispatch: dispatchAction,
-                    request: compose(dispatch, assoc('params', action.params), action.request),
-                    success: compose(dispatch, assoc('params', action.params), action.success),
-                    error: compose(dispatch, assoc('params', action.params), action.error),
-                    reset: compose(dispatch, assoc('params', action.params), action.reset),
-                    load: compose(dispatch, assoc('params', action.params), action.load)
+                    request: composeAction(action.request),
+                    success: composeAction(action.success),
+                    error: composeAction(action.error),
+                    reset: composeAction(action.reset),
+                    load: composeAction(action.load)
                 }
             }, getActions(props, actionsConfig));
 

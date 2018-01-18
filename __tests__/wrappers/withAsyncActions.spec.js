@@ -214,6 +214,43 @@ describe('With Async Client HOC', () => {
         });
     });
 
+    describe('withAsyncAction() with options and params from props', () => {
+        const baseAction = firstAction.withDefaultPayload(props => props.payload);
+        const f1 = baseAction.withParams({f:1}).withOptions(props => ({ dispatchOnMount: props.autoStartFirst }));
+        const f2 = baseAction.withParams({f:2}).withOptions(props => ({ dispatchOnUpdate: props.autoUpdateSecond, resetOnUnmount: props.autoResetThird }));
+        const f3 = firstAction.withDefaultPayload(() => 'params from props').withParams(({ param }) => ({ param })).withOptions({ dispatchOnMount: true });
+        const ComponentWithAsync = withAsyncActions({
+            firstAction: f1,
+            secondAction: f2,
+            f3,
+        }, {}, () => ({ autoStartFirst: true, autoUpdateSecond: true, autoResetThird: true }))(Component);
+
+        const { wrapper, store } = setup({payload: 1, first: firstData, second: secondData, action, param: 3}, ComponentWithAsync);
+
+        it('should work with mount', () => {
+            const state = store.getState();
+            expect(f1.selectData(state)).toEqual(1);
+            expect(f2.selectData(state)).toEqual([]);
+            expect(firstAction.withParams({ param: 3 }).selectData(state)).toEqual('params from props');
+        });
+
+        it('should work with update', () => {
+            wrapper.setProps({
+                payload: 2
+            });
+            const state = store.getState();
+            expect(f1.selectData(state)).toEqual(1);
+            expect(f2.selectData(state)).toEqual(2);
+        });
+
+        it('should work with unmount', () => {
+            wrapper.unmount();
+            const state = store.getState();
+            expect(f1.selectData(state)).toEqual(1);
+            expect(f2.selectData(state)).toEqual([]);
+        });
+    })
+
     describe('withAsyncActions({}, { dispatchOnMount, resetOnUnmount})', () => {
         const ComponentWithAsync = withAsyncActions({
             firstAction,
