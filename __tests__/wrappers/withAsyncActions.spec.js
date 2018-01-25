@@ -80,7 +80,9 @@ describe('With Async Client HOC', () => {
 
         it('should not call extra render', () => {
             const { store, getRendersCount } = createAndSetupComponent({
-                firstAction,
+                firstAction: firstAction.withOptions({
+                    resetOnMount: true
+                }),
             });
             store.dispatch(secondAction());
             expect(getRendersCount()).toEqual(1);
