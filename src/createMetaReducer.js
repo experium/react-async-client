@@ -9,20 +9,23 @@ export default function createMetaReducer(actionName) {
         const param = pathOr(params || noParamsKey, ['params'], requestAction);
         const getLastSucceedAt = () => pathOr(null, [getPath(param), 'lastSucceedAt'], state);
 
-        const getState = (pending, error, success, lastSucceedAt = getLastSucceedAt()) => {
-            const meta = { pending, error, success, lastSucceedAt };
+        const getMeta = (pending, error, success, lastSucceedAt = getLastSucceedAt()) => ({
+            pending, error, success, lastSucceedAt
+        });
+
+        const getState = meta => {
             return assoc(getPath(param), meta, state);
         };
 
         switch(type) {
             case toRequest(actionName):
-                return getState(true, false, false);
+                return getState(getMeta(true, false, false));
             case toSuccess(actionName):
-                return getState(false, false, true, (new Date).toISOString());
+                return getState(getMeta(false, false, true, (new Date).toISOString()));
             case toError(actionName):
-                return getState(false, payload, false);
+                return getState(getMeta(false, payload, false));
             case toReset(actionName):
-                return getState(false, false, false, null);
+                return getState(defaultState);
             case toLoad(actionName):
                 const updateState = assocPath([getPath(param), 'lastSucceedAt'], attrs.lastSucceedAt);
                 return !getLastSucceedAt() || attrs.force ? updateState(state) : state;
