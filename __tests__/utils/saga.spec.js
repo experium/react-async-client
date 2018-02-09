@@ -1,10 +1,12 @@
-import { assoc } from 'ramda';
+import { assoc, prop } from 'ramda';
 
 import configureStore from '../test-utils/configureStore';
 import { createPromise } from '../test-utils/promiseHandlers';
 import {
     createAsyncAction,
-    asyncTakeFirst
+    asyncTakeFirst,
+    takeOnce,
+    createTaker
 } from '../../src/index';
 
 const REFRESH = 'REFRESH';
@@ -12,6 +14,21 @@ const refreshHandler = jest.fn(({ payload }) => {
     return payload;
 });
 const refresh = createAsyncAction(REFRESH, refreshHandler, {}, asyncTakeFirst);
+
+
+const REFRESH_ONCE = 'REFRESH_ONCE';
+const refreshOnceHandler = jest.fn(({ payload }) => {
+    return payload;
+});
+const refreshOnce = createAsyncAction(REFRESH_ONCE, refreshOnceHandler, {}, takeOnce);
+
+const REFRESH_ONCE_CONTROLLED = 'REFRESH_ONCE_CONTROLLED';
+const refreshOnceControlledHandler = jest.fn(({ payload }) => {
+    return payload;
+});
+const controlledParams = [];
+const controlledTakeOnce = createTaker(prop('type'), false, controlledParams);
+const refreshOnceControlled = createAsyncAction(REFRESH_ONCE_CONTROLLED, refreshOnceControlledHandler, {}, controlledTakeOnce);
 
 const setup = () => {
     const store = configureStore({});
@@ -49,7 +66,6 @@ describe('utils/saga (takeFirst)', () => {
         expect(refreshHandler).toHaveBeenCalledTimes(2);
     });
 
-
     it('takeFirst call twice with different params', async () => {
         const requestWithFirstParam = refresh.withParams('first');
         const requestWithSecondParam = refresh.withParams('second');
@@ -70,4 +86,40 @@ describe('utils/saga (takeFirst)', () => {
 
         expect(refreshHandler).toHaveBeenCalledTimes(4);
     });
+
+    it('takeOnce call once', async () => {
+        const request = createPromise(1);
+        store.dispatch(refreshOnce(request));
+        request.resolve();
+        await request.promise.then();
+
+        const requestSkipped = createPromise(1);
+        store.dispatch(refreshOnce(requestSkipped));
+        requestSkipped.resolve();
+        await requestSkipped.promise.then();
+
+        expect(refreshOnceHandler).toHaveBeenCalledTimes(1);
+    });
+
+    it('controlled takeOnce call again after reset', async () => {
+        const request = createPromise(1);
+        store.dispatch(refreshOnceControlled(request));
+        request.resolve();
+        await request.promise.then();
+
+        const requestSkipped = createPromise(1);
+        store.dispatch(refreshOnceControlled(requestSkipped));
+        requestSkipped.resolve();
+        await requestSkipped.promise.then();
+
+        controlledParams.length = 0;
+
+        const requestNext = createPromise(1);
+        store.dispatch(refreshOnceControlled(requestNext));
+        requestNext.resolve();
+        await requestNext.promise.then();
+
+        expect(refreshOnceControlledHandler).toHaveBeenCalledTimes(2);
+    });
+
 });
