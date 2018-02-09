@@ -2,9 +2,8 @@ import { take, fork, join, select } from 'redux-saga/effects';
 import { append, contains, not, prop, without, path } from 'ramda';
 import { noParamsKey, getPath } from '../asyncHelpers';
 
-export const createTakeFirst = storedBy => function*(pattern, saga, ...args) {
+export const createTakeFirst = (storedBy, takedParams = []) => function*(pattern, saga, ...args) {
     const task = yield fork(function*() {
-        let takedParams = [];
         /* eslint-disable no-loop-func */
         while (true) {
             const action = yield take(pattern);
