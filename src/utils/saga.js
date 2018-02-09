@@ -1,64 +1,33 @@
-import { take, fork, join, select } from 'redux-saga/effects';
-import { append, contains, not, prop, without, path } from 'ramda';
-import { noParamsKey, getPath } from '../asyncHelpers';
+import { fork, call } from 'redux-saga/effects';
+import { contains, prop } from 'ramda';
+import { takeEvery } from 'redux-saga';
 
-export const createTakeFirst = (storedBy, takedParams = []) => function*(pattern, saga, ...args) {
+export const createTaker = (storedBy, removeOnSuccess = true, takedParams = []) => function* (pattern, saga, ...args) {
     const task = yield fork(function*() {
-        /* eslint-disable no-loop-func */
-        while (true) {
-            const action = yield take(pattern);
+        yield takeEvery(pattern, function* (action) {
             const params = storedBy(action);
 
-            if (not(contains(params, takedParams))) {
-                takedParams = append(params, takedParams);
-                const firstTask = yield fork(saga, ...args.concat(action));
+            if (!contains(params, takedParams)) {
+                takedParams.push(params);
 
-                yield fork(function*() {
-                    yield join(firstTask);
-                    takedParams = without([params], takedParams);
-                });
-            }
-        }
-        /* eslint-enable no-loop-func */
-    });
-
-    return task;
-}
-
-export function* takeOnce(pattern, saga, ...args) {
-    const task = yield fork(function*() {
-        let onceTasks = [];
-        /* eslint-disable no-loop-func */
-        while (true) {
-            const action = yield take(pattern);
-            const params = prop('params', action);
-            const pathName = getPath(params || noParamsKey);
-
-            if (not(contains(params, onceTasks))) {
-                const success = yield select(state => path(['asyncClient', 'meta', pattern, pathName, 'success'], state));
-                onceTasks = append(params, onceTasks);
-
-                if (success) {
-                    return;
-                }
-
-                const onceTask = yield fork(saga, ...args.concat(action));
-                yield fork(function*() {
-                    const { error } = yield join(onceTask);
-                    if (error) {
-                        onceTasks = without([params], onceTasks);
+                try {
+                    yield call(saga, ...args.concat(action));
+                    if (removeOnSuccess) {
+                        takedParams.splice(takedParams.indexOf(params), 1);
                     }
-                });
+                } catch (e) {
+                    takedParams.splice(takedParams.indexOf(params), 1);
+                }
             }
-        }
-        /* eslint-enable no-loop-func */
+        })
     });
 
     return task;
 }
 
-export const takeFirst = createTakeFirst(prop('type'));
-export const asyncTakeFirst = createTakeFirst(prop('params'));
+export const takeOnce = createTaker(prop('params'), false);
+export const takeFirst = createTaker(prop('type'));
+export const asyncTakeFirst = createTaker(prop('params'));
 
 var middleware = null;
 
