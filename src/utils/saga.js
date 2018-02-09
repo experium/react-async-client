@@ -1,6 +1,5 @@
-import { fork, call } from 'redux-saga/effects';
+import { fork, call, takeEvery } from 'redux-saga/effects';
 import { contains, prop } from 'ramda';
-import { takeEvery } from 'redux-saga';
 
 export const createTaker = (storedBy, removeOnSuccess = true, takedParams = []) => function* (pattern, saga, ...args) {
     const task = yield fork(function*() {
