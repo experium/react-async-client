@@ -87,6 +87,7 @@ export { withAsyncActions } from './withAsyncActions';
 export { withAsyncHandlers } from './withAsyncHandlers';
 export { withSagas } from './withSagas';
 export { asyncConnect } from './asyncConnect';
+export { SagaProvider } from './SagaProvider';
 export {
     toLoad,
     toError,

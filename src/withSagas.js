@@ -1,9 +1,14 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { forEach, map } from 'ramda';
 import { runSaga } from './utils/saga';
 
 export const withSagas = sagas => WrappedComponent => {
     return class extends Component {
+        static contextTypes = {
+            sagaMiddleware: PropTypes.func.isRequired
+        };
+
         sagaTasks = [];
 
         getProps = () => {
@@ -11,7 +16,7 @@ export const withSagas = sagas => WrappedComponent => {
         }
 
         componentWillMount() {
-            this.sagaTasks = map(saga => runSaga(saga, this.getProps), sagas);
+            this.sagaTasks = map(saga => runSaga(this.context.sagaMiddleware, saga, this.getProps), sagas);
         }
 
         componentWillUnmount() {
