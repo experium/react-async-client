@@ -2,19 +2,22 @@ import React from 'react';
 import { mount } from 'enzyme';
 import { Provider } from 'react-redux';
 
-import configureStore from '../test-utils/configureStore';
+import configureStore, { sagaMiddleware } from '../test-utils/configureStore';
 import {
     createAsyncAction,
-    asyncConnect
+    asyncConnect,
+    SagaProvider
 } from '../../src/index';
 
 const Component = () => null;
 
 const setup = (AsyncComponent, store = configureStore({})) => {
     return mount(
-        <Provider store={store}>
-            <AsyncComponent />
-        </Provider>
+        <SagaProvider sagaMiddleware={sagaMiddleware}>
+            <Provider store={store}>
+                <AsyncComponent />
+            </Provider>
+        </SagaProvider>
     );
 };
 

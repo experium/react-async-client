@@ -2,11 +2,12 @@ import React from 'react';
 import { mount } from 'enzyme';
 import { Provider } from 'react-redux';
 
-import configureStore from '../test-utils/configureStore';
+import configureStore, { sagaMiddleware } from '../test-utils/configureStore';
 import { createPromise } from '../test-utils/promiseHandlers';
 import {
     createAsyncAction,
-    withAsyncActions
+    withAsyncActions,
+    SagaProvider
 } from '../../src/index';
 import { take, select } from 'redux-saga/effects';
 
@@ -34,9 +35,11 @@ const Component = (props) => {
     );
 };
 const PropsProviderComponent = ({ store, AsyncComponent, ...props}) => (
-    <Provider store={store}>
-        <AsyncComponent {...props} />
-    </Provider>
+    <SagaProvider sagaMiddleware={sagaMiddleware}>
+        <Provider store={store}>
+            <AsyncComponent {...props} />
+        </Provider>
+    </SagaProvider>
 );
 
 const setup = ({first, second, action, ...props} = {}, AsyncComponent, store = configureStore({})) => {
