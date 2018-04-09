@@ -94,8 +94,10 @@ Page = withAsyncActions({ getUser })(Page);
 and should return object of asyncClient actions.
 
 Action can be extended with params or payload:
-* `withParams(params (Object || String))` - tell asyncClient to store results of action by string of params path
-* `withPayload(getPayload (Function))` - tell asyncClient to get payload for dispatch of autoFetch or autoUpdate by
+* `withParams(params (Function (props) || Object || String))` - tell asyncClient to store results of action by string of params path
+* `withPayload(getPayload (Function (props)))` - tell asyncClient to get payload for dispatch of autoFetch or autoUpdate by
+* `withSuccesHandler(handler Function (props, successAction))` - success handler for connected action params
+* `withErrorHandler(handler Function (props, errorAction))` - error handler for connected action params
 
 Usage example:
 ```javascript

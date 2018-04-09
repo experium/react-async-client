@@ -35,7 +35,9 @@ const createConfigurableAction = (action, config = {}) => {
 
     function withConfig(name) {
         return function (value) {
-            return createConfigurableAction(newAction, { [name]: value });
+            return createConfigurableAction(newAction, {
+                [name]: value,
+            });
         }
     }
 
