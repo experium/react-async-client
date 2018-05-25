@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { compose, map, mapObjIndexed, assoc, forEachObjIndexed, fromPairs, is } from 'ramda';
 import { connect } from 'react-redux';
 import { getActionData, getActionMeta, getActions, callWithProps } from './asyncHelpers';
-import { equals, merge, when, prop, forEach } from 'ramda';
+import { equals, merge, when, prop, forEach, omit } from 'ramda';
 import { renameKeys } from './utils/ramdaAdditions';
 import { withAsyncHandlers } from './withAsyncHandlers';
 import { bindActionCreators } from 'redux';
@@ -106,11 +106,15 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
                     items.push([actionName + '_meta', getActionMeta(action, state, props)]);
                 }
             }, getActions(props, actionsConfig));
-            if (mapStateToProps) {
-                items.push(['__connect', mapStateToProps(state, props)]);
-            }
 
-            return fromPairs(items);
+            if (mapStateToProps) {
+                return {
+                    ...fromPairs(items),
+                    ...mapStateToProps(state, props),
+                };
+            } else {
+                return fromPairs(items);
+            }
         };
 
         const dispatchToProps = (dispatch, props) => {
@@ -139,9 +143,12 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
         };
 
         const mergeProps = (stateProps, dispatchProps, ownProps) => {
+            let stateToProps = stateProps;
             return {
                 ...ownProps,
                 ...mapObjIndexed((action, key) => {
+                    stateToProps = omit([key + '_data', key + '_meta'], stateToProps);
+
                     return {
                         type: action.type,
                         data: stateProps[key + '_data'],
@@ -149,7 +156,7 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
                         ...dispatchProps[key]
                     }
                 }, getActions(ownProps, actionsConfig)),
-                ...stateProps.__connect,
+                ...stateToProps,
                 ...dispatchProps.__connect,
             }
         };
