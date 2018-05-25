@@ -9,7 +9,8 @@ const middlewares = [sagaMiddleware];
 export default function configureStore(initialState = {}) {
     const store = createStore(
         combineReducers({
-            ...getAsyncReducers()
+            ...getAsyncReducers(),
+            user: (state = null) => state,
         }),
         initialState,
         applyMiddleware(...middlewares)
