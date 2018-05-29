@@ -121,17 +121,6 @@ describe('With Async Client HOC', () => {
             expect(getRendersCount()).toEqual(3);
         });
 
-        it('should skip extra render', () => {
-            const { store, getRendersCount } = createAndSetupComponent({
-                firstAction: firstAction.withOptions({
-                    dispatchOnMount: true,
-                    skipExtraRender: true,
-                }),
-            });
-            store.dispatch(firstAction());
-            expect(getRendersCount()).toEqual(3);
-        });
-
         it('should not skip extra render', () => {
             const { store, getRendersCount } = createAndSetupComponent({
                 firstAction: firstAction.withOptions({

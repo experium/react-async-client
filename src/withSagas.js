@@ -15,7 +15,7 @@ export const withSagas = sagas => WrappedComponent => {
             return this.props;
         }
 
-        componentWillMount() {
+        componentDidMount() {
             this.sagaTasks = map(saga => runSaga(this.context.sagaMiddleware, saga, this.getProps), sagas);
         }
 

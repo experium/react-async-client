@@ -15,7 +15,6 @@ const defaultOptions = {
     resetOnUnmount: false,
     dispatchOnMount: false,
     dispatchOnUpdate: false,
-    skipExtraRender: false,
 };
 
 const defaultShouldUpdate = (props, nextProps, action) => {
@@ -40,18 +39,10 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
         let intervals = [];
 
         const hoc = class extends Component {
-            constructor(props) {
-                super(props);
-                this.state = {
-                    skipRender: false,
-                };
-            }
-
-            componentWillMount() {
+            componentDidMount() {
                 const actions = getActions(this.props, actionsConfig);
                 forEachObjIndexed((action, key) => {
                     when(prop('dispatchOnMount'), (options) => {
-                        when(prop('skipExtraRender'), () => this.setState({ skipRender: true }))(options);
                         const getPayload = action.defaultPayload;
                         this.props[key].dispatch(getPayload && getPayload(this.props));
                         when(prop('pollInterval'), () => {
@@ -60,26 +51,22 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
                             }, options.pollInterval));
                         })(options);
                     })(getOptions(action, this.props));
-                    when(prop('resetOnMount'), (options) => {
-                        when(prop('skipExtraRender'), () => this.setState({ skipRender: true }))(options);
+                    when(prop('resetOnMount'), () => {
                         this.props[key].reset();
                     })(getOptions(action, this.props));
                 }, actions);
             }
 
-            componentWillReceiveProps(nextProps) {
-                this.setState({
-                    skipRender: false,
-                })
+            componentDidUpdate(prevProps) {
                 forEachObjIndexed((action, key) => when(prop('dispatchOnUpdate'), (options) => {
                     const shouldUpdate = action.shouldUpdate || defaultShouldUpdate;
-                    if (shouldUpdate(this.props, nextProps, action)) {
-                        when(prop('resetOnUpdate'), this.props[key].reset)(options);
+                    if (shouldUpdate(prevProps, this.props, action)) {
+                        when(prop('resetOnUpdate'), prevProps[key].reset)(options);
 
                         const getPayload = action.defaultPayload;
-                        nextProps[key].dispatch(getPayload && getPayload(nextProps));
+                        this.props[key].dispatch(getPayload && getPayload(this.props));
                     }
-                })(getOptions(action, nextProps)), getActions(nextProps, actionsConfig));
+                })(getOptions(action, this.props)), getActions(this.props, actionsConfig));
             }
 
             componentWillUnmount() {
@@ -91,7 +78,7 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
             }
 
             render() {
-                return this.state.skipRender ? null : <WrappedComponent {...this.props} />;
+                return <WrappedComponent {...this.props} />;
             }
         }
 
