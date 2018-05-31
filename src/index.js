@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import { isEmpty, mapObjIndexed, pickAll } from 'ramda';
+import { head, is, isEmpty, mapObjIndexed, pickAll } from 'ramda';
 import { capitalize } from './utils/ramdaAdditions';
 
 import { createAction } from './actionHelpers';
@@ -53,11 +53,11 @@ const createConfigurableAction = (action, config = {}) => {
     return newAction;
 };
 
-function createAsyncAction(actionName, handler, initialState, taker, customReducer) {
+function configAsyncAction(actionName, handler, initialState, taker, customReducer, customSagaGenerator) {
     const action = createAction(actionName);
     const dataReducer = createHttpReducer(actionName, initialState, customReducer);
     const metaReducer = createMetaReducer(actionName);
-    const saga = createSaga(action, taker);
+    const saga = createSaga(customSagaGenerator, taker)(action);
 
     setActionHandler(actionName, handler);
 
@@ -81,6 +81,23 @@ function getAsyncReducers() {
     };
 }
 
+function createAsyncAction(...args) {
+    const action = head(args);
+
+    if (is(String, action)) {
+        return configAsyncAction(...args);
+    } else {
+        return configAsyncAction(
+            action.actionName,
+            action.handler,
+            action.initialState,
+            action.taker,
+            action.customReducer,
+            action.customSagaGenerator,
+        );
+    }
+}
+
 export { createAsyncAction, getAsyncSagas, getAsyncReducers, noParamsReducer };
 export { noParamsKey, defaultKey };
 export { withAsyncActions } from './withAsyncActions';
@@ -97,3 +114,4 @@ export {
     createAction
 } from './actionHelpers';
 export * from './utils/saga';
+export * from './utils/doAction';

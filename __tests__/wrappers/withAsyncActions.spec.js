@@ -196,7 +196,7 @@ describe('With Async Client HOC', () => {
 
 
         it('should load data', () => {
-            const date = (new Date).toISOString();
+            const date = (new Date()).toISOString();
             component.props().secondAction.reset();
             component.props().secondAction.load('loaded', {
                 lastSucceedAt: date,

@@ -1,14 +1,16 @@
 # React async client
 [![Build Status](https://travis-ci.org/experium/react-async-client.svg?branch=master)](https://travis-ci.org/experium/react-async-client)
 
-#### `createAsyncAction(actionName, handler, initialState = undefined, sagaTaker = takeLatest, customReducer = defaultReducer)`
+#### `createAsyncAction(actionName, handler, initialState = undefined, sagaTaker = takeLatest, customReducer = defaultReducer || actionConfig (Object))`
 The function creates an action, a saga, a data reducer and a meta reducer.
 
+Action config:
 * `actionName (String)` - action name
 * `handler (Function)` - action handler
 * `initialState (any)` - reducer initial state
 * `sagaTaker (Function)` - saga effect function
 * `customReducer (Function)` - custom reducer function
+* `customSagaGenerator (Function*)` - custom saga request generator function
 
 Usage example:
 ```javascript
