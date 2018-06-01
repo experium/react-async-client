@@ -18,7 +18,7 @@ export const asReset = setStatus(toReset);
 export const asLoad = setStatus(toLoad);
 
 export const createAction = (type, staticPayload) => {
-    function action(payload = null, attrs = null) {
+    function action(payload = null, attrs) {
         return {
             type,
             payload: staticPayload || payload,

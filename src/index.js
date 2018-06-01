@@ -113,5 +113,10 @@ export {
     toReset,
     createAction
 } from './actionHelpers';
+export {
+    selectData,
+    selectMeta,
+} from './asyncHelpers';
 export * from './utils/saga';
 export * from './utils/doAction';
+export * from './utils/cache';
