@@ -7,7 +7,8 @@ import { createPromise } from '../test-utils/promiseHandlers';
 import {
     createAsyncAction,
     withAsyncActions,
-    SagaProvider
+    SagaProvider,
+    toSuccess,
 } from '../../src/index';
 import { take, select } from 'redux-saga/effects';
 
@@ -150,7 +151,8 @@ describe('With Async Client HOC', () => {
             const defer = createPromise();
             component.props().firstAction.dispatch(defer.promise);
 
-            expect(component.find('#first').text()).toEqual(firstLoader);
+            wrapper.update();
+            expect(wrapper.find('#first').text()).toEqual(firstLoader);
         });
 
         it('should render data', async () => {
@@ -159,8 +161,9 @@ describe('With Async Client HOC', () => {
 
             defer.resolve();
             await defer.promise.then();
+            wrapper.update();
 
-            expect(component.find('#first').text()).toEqual(firstData);
+            expect(wrapper.find('#first').text()).toEqual(firstData);
         });
 
         it('should set error', async () => {
@@ -172,14 +175,16 @@ describe('With Async Client HOC', () => {
             try {
                 await defer.promise.catch();
             } catch(e) {
-                expect(component.find('#first').text()).toEqual(firstError);
+                wrapper.update();
+                expect(wrapper.find('#first').text()).toEqual(firstError);
             }
         });
 
         it('should render reset data', () => {
             component.props().firstAction.reset();
+            wrapper.update();
 
-            expect(component.find('#first').length).toEqual(0);
+            expect(wrapper.find('#first').length).toEqual(0);
         });
 
         it('should dispatch with default payload', () => {
@@ -314,14 +319,16 @@ describe('With Async Client HOC', () => {
             wrapper.setProps({
                 waitForFirst: true
             });
-            expect(component.find('#first').text()).toEqual(emptyDispatch);
-            expect(component.find('#second').length).toEqual(0);
+            wrapper.update();
+            expect(wrapper.find('#first').text()).toEqual(emptyDispatch);
+            expect(wrapper.find('#second').length).toEqual(0);
 
             wrapper.setProps({
                 waitForSecond: true
             });
-            expect(component.find('#first').text()).toEqual(emptyDispatch);
-            expect(component.find('#second').text()).toEqual('');
+            wrapper.update();
+            expect(wrapper.find('#first').text()).toEqual(emptyDispatch);
+            expect(wrapper.find('#second').text()).toEqual('');
         });
     });
 
@@ -355,9 +362,10 @@ describe('With Async Client HOC', () => {
 
         it('should auto reset state', () => {
             wrapper.unmount();
+            wrapper.update();
 
-            expect(component.find('#first').length).toEqual(0);
-            expect(component.find('#second').length).toEqual(0);
+            expect(wrapper.find('#first').length).toEqual(0);
+            expect(wrapper.find('#second').length).toEqual(0);
 
             const state = store.getState();
 
@@ -384,9 +392,10 @@ describe('With Async Client HOC', () => {
 
         it('should render auto update data on change props', () => {
             wrapper.setProps({first: '4'});
+            wrapper.update();
             const state = store.getState();
 
-            expect(component.find('#first').text()).toEqual('4');
+            expect(wrapper.find('#first').text()).toEqual('4');
             expect(firstAction.withParams({ first: 1 }).selectData(state)).toEqual([]);
             expect(firstAction.withParams({ first: 4 }).selectData(state)).toEqual('4');
         });
@@ -395,7 +404,7 @@ describe('With Async Client HOC', () => {
             wrapper.unmount();
             const state = store.getState();
 
-            expect(component.find('#first').length).toEqual(0);
+            expect(wrapper.find('#first').length).toEqual(0);
             expect(firstAction.withParams({ first: 1 }).selectData(state)).toEqual([]);
         });
     });
@@ -449,7 +458,7 @@ describe('With Async Client HOC', () => {
         let notFn = jest.fn();
         let saga = function* (getProps) {
             fn(getProps());
-            yield take(FIRST_ACTION);
+            yield take(toSuccess(FIRST_ACTION));
             const state = yield select(firstAction.selectData);
             actionFn(state);
             yield take('AFTER_UNMOUNT');

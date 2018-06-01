@@ -7,7 +7,8 @@ import {
     createAsyncAction,
     withAsyncActions,
     withSagas,
-    SagaProvider
+    SagaProvider,
+    toSuccess,
 } from '../../src/index';
 import { take, select} from 'redux-saga/effects';
 
@@ -57,7 +58,7 @@ describe('With Sagas HOC', () => {
         let notFn = jest.fn();
         let saga = function* (getProps) {
             fn(getProps());
-            yield take(DELETE_ACTION);
+            yield take(toSuccess(DELETE_ACTION));
             const state = yield select(deleteAction.selectData);
             actionFn(state);
             yield take('AFTER_UNMOUNT');

@@ -21,7 +21,7 @@ export default function createMetaReducer(actionName) {
             case toRequest(actionName):
                 return getState(getMeta(true, false, false));
             case toSuccess(actionName):
-                return getState(getMeta(false, false, true, (new Date).toISOString()));
+                return getState(getMeta(false, false, true, (new Date()).toISOString()));
             case toError(actionName):
                 return getState(getMeta(false, payload, false));
             case toReset(actionName):
