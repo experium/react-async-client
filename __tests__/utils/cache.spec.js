@@ -78,7 +78,7 @@ describe('cache utils', () => {
 
 
         it('should render from cache', async () => {
-            setItem(noParamsKey, {
+            setItem(`${actionType}/${noParamsKey}`, {
                 response: 'cached',
                 lastSucceedAt: (new Date()).toISOString(),
             });
@@ -97,7 +97,7 @@ describe('cache utils', () => {
 
         it('should render error', async () => {
             component.props().configuratedAction.reset();
-            setItem(noParamsKey, null);
+            setItem(`${actionType}/${noParamsKey}`, null);
             const defer = createPromise('data', error);
             component.props().configuratedAction.dispatch(defer.promise);
 
