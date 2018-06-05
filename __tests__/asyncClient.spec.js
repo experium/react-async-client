@@ -13,10 +13,10 @@ import noParamsReducer from '../src/noParamsReducer';
 import createHttpReducer from '../src/createHttpReducer';
 import createMetaReducer from '../src/createMetaReducer';
 import createSaga from '../src/createSaga';
-import { getPath, getData, noParamsKey } from '../src/asyncHelpers';
+import { getPath, getDataFromProps, noParamsKey } from '../src/asyncHelpers';
 
-const getActionData = getData('data');
-const getActionMeta = getData('meta');
+const getActionData = getDataFromProps('data');
+const getActionMeta = getDataFromProps('meta');
 
 const FIRST_ACTION = 'FIRST_ACTION';
 const SECOND_ACTION = 'SECOND_ACTION';

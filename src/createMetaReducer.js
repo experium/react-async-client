@@ -1,6 +1,6 @@
 import { toSuccess, toReset, toError, toRequest, toLoad } from './actionHelpers';
 import { getPath, noParamsKey, defaultKey } from './asyncHelpers';
-import { assoc, assocPath, pathOr } from 'ramda';
+import { assoc, assocPath, pathOr, prop } from 'ramda';
 
 const defaultState = { pending: false, error: false, success: false, lastSucceedAt: null };
 
@@ -21,7 +21,8 @@ export default function createMetaReducer(actionName) {
             case toRequest(actionName):
                 return getState(getMeta(true, false, false));
             case toSuccess(actionName):
-                return getState(getMeta(false, false, true, (new Date()).toISOString()));
+                const { error, lastSucceedAt } = attrs;
+                return getState(getMeta(false,  error || false, true, lastSucceedAt));
             case toError(actionName):
                 return getState(getMeta(false, payload, false));
             case toReset(actionName):

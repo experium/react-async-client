@@ -33,7 +33,7 @@ describe('actionHelpers', () => {
             const expectedAction = {
                 type,
                 payload: null,
-                attrs: null
+                attrs: undefined
             };
             const resAction = createAction(type)();
             expect(resAction).toEqual(expectedAction);
@@ -44,7 +44,7 @@ describe('actionHelpers', () => {
             const expectedAction = {
                 type,
                 payload: null,
-                attrs: null
+                attrs: undefined
             };
             const actionCreator = createAction(type);
             expect(actionCreator.error()).toEqual({ ...expectedAction, type: `${type}_ERROR`, });

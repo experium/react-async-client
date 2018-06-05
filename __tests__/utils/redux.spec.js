@@ -18,7 +18,7 @@ describe('utils/redux (requestGenerator)', () => {
 
         const requestAction = {
             type: LOGIN + '_REQUEST',
-            attrs: null,
+            attrs: undefined,
             payload: null,
             requestAction: action
         };
@@ -28,7 +28,7 @@ describe('utils/redux (requestGenerator)', () => {
         const mockedResponse = { foo: 'bar' };
         const responseAction = {
             type: LOGIN + '_SUCCESS',
-            attrs: null,
+            attrs: undefined,
             payload: mockedResponse,
             requestAction: action
         };
@@ -43,7 +43,7 @@ describe('utils/redux (requestGenerator)', () => {
 
         const requestAction = {
             type: LOGIN + '_REQUEST',
-            attrs: null,
+            attrs: undefined,
             payload: null,
             requestAction: action
         };
@@ -53,7 +53,7 @@ describe('utils/redux (requestGenerator)', () => {
         const error = new Error('mocked error');
         const errorResponseAction = {
             type: LOGIN + '_ERROR',
-            attrs: null,
+            attrs: undefined,
             payload: error,
             requestAction: action
         };
@@ -68,7 +68,7 @@ describe('utils/redux (requestGenerator)', () => {
 
         const requestAction = {
             type: LOGIN + '_REQUEST',
-            attrs: null,
+            attrs: undefined,
             payload: null,
             requestAction: action
         };
@@ -78,7 +78,7 @@ describe('utils/redux (requestGenerator)', () => {
         } catch(error) {
             const errorResponseAction = {
                 type: LOGIN + '_ERROR',
-                attrs: null,
+                attrs: undefined,
                 payload: error,
                 requestAction: action
             };

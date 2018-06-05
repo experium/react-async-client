@@ -16,7 +16,7 @@ export function* requestGenerator(actionFn, action) {
         const response = yield* doAction(action);
         yield put( asSuccess(actionFn(response)) );
         return { response };
-    } catch(error) {
+    } catch (error) {
         yield put( asError(actionFn(error)) );
         return { error };
     }

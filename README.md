@@ -1,14 +1,18 @@
 # React async client
 [![Build Status](https://travis-ci.org/experium/react-async-client.svg?branch=master)](https://travis-ci.org/experium/react-async-client)
 
-#### `createAsyncAction(actionName, handler, initialState = undefined, sagaTaker = takeLatest, customReducer = defaultReducer)`
+#### `createAsyncAction(actionConfig(actionName, handler, initialState = undefined, sagaTaker = takeLatest, customReducer = defaultReducer) || actionConfig: {})`
 The function creates an action, a saga, a data reducer and a meta reducer.
 
+Action config:
 * `actionName (String)` - action name
 * `handler (Function)` - action handler
 * `initialState (any)` - reducer initial state
 * `sagaTaker (Function)` - saga effect function
 * `customReducer (Function)` - custom reducer function
+* `customSagaGenerator (Function*)` - custom saga request generator function
+or:
+* `actionConfig (Object)` - action config
 
 Usage example:
 ```javascript
@@ -267,4 +271,31 @@ const fetchUserActionCreator = (payload, attrs) => {
 function* watchFetchUser() {
     yield takeEvery('USER_REQUESTED', requestGenerator, fetchUserActionCreator);
 }
+```
+
+#### `createRequestCacheGenerator(cacheConfig: Object)`
+Сreates the customSagaGenerator that will perform the actions with cache storage config.
+
+cacheConfig for storage:
+* `getItem (Function (path))` - get cache from storage
+* `setItem (Function (path, item: Object))` - set cache in storage
+
+where params:
+* `path (string)` - cache path identifier
+* `item (Object)` - data cache object that should be handled to storage
+
+Usage example:
+```javascript
+import { createRequestCacheGenerator } from 'react-async-client';
+
+const cache = {};
+
+getItem = path => cache[path];
+setItem = (path, item) => cache[path] = item;
+
+const getUser = createAsyncAction({
+    actionName: 'GET_USER',
+    handler: () => 'data',
+    customSagaGenerator: createRequestCacheGenerator({ getItem, setItem }),
+});
 ```
