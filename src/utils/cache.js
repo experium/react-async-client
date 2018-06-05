@@ -19,7 +19,7 @@ export const createRequestCacheGenerator = ({ getItem, setItem }) => {
             const lastSucceedAt = (new Date()).toISOString();
             yield put(asSuccess(actionFn(response, { lastSucceedAt })));
 
-            setItem(path, {
+            setItem(`${action.type}/${path}`, {
                 response,
                 lastSucceedAt,
             });
@@ -27,7 +27,7 @@ export const createRequestCacheGenerator = ({ getItem, setItem }) => {
             return { response };
         } catch (error) {
             try {
-                const item = yield getItem(path);
+                const item = yield getItem(`${action.type}/${path}`);
 
                 if (!item) {
                     throw new Error('Can\'t get item from cache');
