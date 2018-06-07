@@ -44,10 +44,11 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
                 forEachObjIndexed((action, key) => {
                     when(prop('dispatchOnMount'), (options) => {
                         const getPayload = action.defaultPayload;
-                        this.props[key].dispatch(getPayload && getPayload(this.props));
+                        const getAttrs = action.defaultAttrs;
+                        this.props[key].dispatch(getPayload && getPayload(this.props), getAttrs && getAttrs(this.props));
                         when(prop('pollInterval'), () => {
                             intervals.push(setInterval(() => {
-                                this.props[key].dispatch(getPayload && getPayload(this.props));
+                                this.props[key].dispatch(getPayload && getPayload(this.props), getAttrs && getAttrs(this.props));
                             }, options.pollInterval));
                         })(options);
                     })(getOptions(action, this.props));
@@ -64,7 +65,8 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
                         when(prop('resetOnUpdate'), prevProps[key].reset)(options);
 
                         const getPayload = action.defaultPayload;
-                        this.props[key].dispatch(getPayload && getPayload(this.props));
+                        const getAttrs = action.defaultAttrs;
+                        this.props[key].dispatch(getPayload && getPayload(this.props), getAttrs && getAttrs(this.props));
                     }
                 })(getOptions(action, this.props)), getActions(this.props, actionsConfig));
             }
@@ -111,8 +113,9 @@ export const withAsyncActions = (actionsConfig, options = {}, mapStateToProps, m
                 const composeAction = action => compose(dispatch, assocParams, action);
                 const dispatchAction = composeAction(action);
                 const defaultPayload = action.defaultPayload && action.defaultPayload(props);
+                const defaultAttrs = action.defaultAttrs && action.defaultAttrs(props);
                 return {
-                    refresh: (payload) => dispatchAction(payload || defaultPayload),
+                    refresh: (payload, attrs) => dispatchAction(payload || defaultPayload, attrs || defaultAttrs),
                     dispatch: dispatchAction,
                     request: composeAction(action.request),
                     success: composeAction(action.success),

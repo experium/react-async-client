@@ -95,6 +95,20 @@ describe('cache utils', () => {
             }
         });
 
+        it('should skip render from cache', async () => {
+            component.props().configuratedAction.reset();
+
+            const defer = createPromise('data', error);
+            component.props().configuratedAction.dispatch(defer.promise, { skipCache: true });
+
+            defer.reject();
+            try {
+                await defer.promise.then();
+            } catch(e) {
+                expect(component.find('#data').text()).toEqual('error');
+            }
+        });
+
         it('should render error', async () => {
             component.props().configuratedAction.reset();
             setItem(`${actionType}/${noParamsKey}`, null);

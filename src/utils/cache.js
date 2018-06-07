@@ -1,12 +1,13 @@
-import { put, select } from 'redux-saga/effects';
-import { compose, merge } from 'ramda';
+import { put } from 'redux-saga/effects';
+import { compose, merge, prop } from 'ramda';
 
 import { asRequest, asError, asSuccess } from '../actionHelpers';
-import { getPath, noParamsKey, selectActionMeta } from '../asyncHelpers';
+import { getPath, noParamsKey } from '../asyncHelpers';
 import { doAction } from './doAction';
 
 export const createRequestCacheGenerator = ({ getItem, setItem }) => {
     return function* (actionFn, action) {
+        const skipCache = prop('skipCache', action.attrs);
         const path = getPath(action.params || noParamsKey);
         actionFn = compose(
             merge({ requestAction: action }),
@@ -19,14 +20,20 @@ export const createRequestCacheGenerator = ({ getItem, setItem }) => {
             const lastSucceedAt = (new Date()).toISOString();
             yield put(asSuccess(actionFn(response, { lastSucceedAt })));
 
-            setItem(`${action.type}/${path}`, {
-                response,
-                lastSucceedAt,
-            });
+            if (skipCache) {
+                setItem(`${action.type}/${path}`, {
+                    response,
+                    lastSucceedAt,
+                });
+            }
 
             return { response };
         } catch (error) {
             try {
+                if (skipCache) {
+                    throw error;
+                }
+
                 const item = yield getItem(`${action.type}/${path}`);
 
                 if (!item) {

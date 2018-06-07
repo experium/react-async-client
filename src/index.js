@@ -17,6 +17,7 @@ let metaReducers = {};
 const getDefaultConfig = pickAll([
     'params',
     'defaultPayload',
+    'defaultAttrs',
     'options',
     'shouldUpdate',
     'successHandler',
