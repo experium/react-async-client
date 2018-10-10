@@ -30,6 +30,14 @@ const controlledParams = [];
 const controlledTakeOnce = createTaker(prop('type'), false, controlledParams);
 const refreshOnceControlled = createAsyncAction(REFRESH_ONCE_CONTROLLED, refreshOnceControlledHandler, {}, controlledTakeOnce);
 
+const TAKE_ONCE_FAILED = 'TAKE_ONCE_FAILED';
+const takeOnceFailedHandler = jest.fn(({ payload }) => {
+    return payload;
+});
+const controlledTakeOnceFailedParams = [];
+const controlledTakeOnceFailed = createTaker(prop('type'), false, controlledTakeOnceFailedParams);
+const takeOnceFailed = createAsyncAction(TAKE_ONCE_FAILED, takeOnceFailedHandler, {}, controlledTakeOnceFailed);
+
 const setup = () => {
     const store = configureStore({});
 
@@ -122,4 +130,20 @@ describe('utils/saga (takeFirst)', () => {
         expect(refreshOnceControlledHandler).toHaveBeenCalledTimes(2);
     });
 
+    it('takeOnce should be callable after error', async () => {
+        const requestFailed = createPromise(1, true);
+        store.dispatch(takeOnceFailed(requestFailed.promise));
+        requestFailed.reject();
+        await requestFailed.promise.catch(() => Promise.resolve());
+
+        expect(takeOnceFailed.selectMeta(store.getState()).error).toEqual(true);
+
+        const requestSuccessful = createPromise(2);
+        store.dispatch(takeOnceFailed(requestSuccessful.promise));
+        requestSuccessful.resolve();
+        await requestSuccessful.promise.then();
+
+        expect(takeOnceFailed.selectData(store.getState())).toEqual(2);
+        expect(takeOnceFailedHandler).toHaveBeenCalledTimes(2);
+    });
 });

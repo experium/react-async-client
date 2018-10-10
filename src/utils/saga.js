@@ -10,8 +10,9 @@ export const createTaker = (storedBy, removeOnSuccess = true, takedParams = []) 
                 takedParams.push(params);
 
                 try {
-                    yield call(saga, ...args.concat(action));
-                    if (removeOnSuccess) {
+                    const result = yield call(saga, ...args.concat(action));
+
+                    if (removeOnSuccess || prop('error', result)) {
                         takedParams.splice(takedParams.indexOf(params), 1);
                     }
                 } catch (e) {
