@@ -3,7 +3,7 @@
   "main": "lib/index.js",
   "module": "./lib/index.js",
   "author": "Vyacheslav Salakhutdinov <megazoll@gmail.com>",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "devDependencies": {
     "babel-cli": "^6.24.0",
     "babel-eslint": "^7.2.1",
@@ -55,8 +55,7 @@
     "prebuild": "npm run clean",
     "build": "webpack && babel src --out-dir lib",
     "test": "jest",
-    "test:watch": "npm test -- --watch",
-    "publish-npm": "npm version 0.1.$BUILD_NUMBER && npm publish"
+    "test:watch": "npm test -- --watch"
   },
   "jest": {
     "testPathIgnorePatterns": [
