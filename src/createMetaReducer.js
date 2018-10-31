@@ -1,6 +1,6 @@
 import { toSuccess, toReset, toError, toRequest, toLoad } from './actionHelpers';
 import { getPath, noParamsKey, defaultKey } from './asyncHelpers';
-import { assoc, assocPath, pathOr, prop } from 'ramda';
+import { assoc, assocPath, pathOr } from 'ramda';
 
 const defaultState = { pending: false, error: false, success: false, lastSucceedAt: null };
 

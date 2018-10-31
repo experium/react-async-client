@@ -26,13 +26,17 @@ describe('utils/redux (requestGenerator)', () => {
         expect(generator.next().value).toEqual(doAction(action).next().value);
 
         const mockedResponse = { foo: 'bar' };
+
+        const nextAction = generator.next(mockedResponse).value;
+
         const responseAction = {
             type: LOGIN + '_SUCCESS',
-            attrs: undefined,
+            attrs: { lastSucceedAt: nextAction.payload.action.attrs.lastSucceedAt },
             payload: mockedResponse,
             requestAction: action
         };
-        expect(generator.next(mockedResponse).value).toEqual(put(responseAction));
+
+        expect(nextAction).toEqual(put(responseAction));
         expect(generator.next().value).toEqual({ response: mockedResponse });
     });
 

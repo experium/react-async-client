@@ -7,17 +7,19 @@ import { doAction } from './doAction';
 
 export function* requestGenerator(actionFn, action) {
     actionFn = compose(
-        merge({requestAction: action}),
+        merge({ requestAction: action }),
         actionFn
     );
 
     try {
-        yield put( asRequest(actionFn(null)) );
+        yield put(asRequest(actionFn(null)));
         const response = yield* doAction(action);
-        yield put( asSuccess(actionFn(response)) );
+        const lastSucceedAt = (new Date()).toISOString();
+
+        yield put(asSuccess(actionFn(response, { lastSucceedAt })));
         return { response };
     } catch (error) {
-        yield put( asError(actionFn(error)) );
+        yield put(asError(actionFn(error)));
         return { error };
     }
 }

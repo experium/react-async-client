@@ -17,6 +17,7 @@ export const createRequestCacheGenerator = ({ getItem, setItem }) => {
             yield put(asRequest(actionFn(null)));
             const response = yield* doAction(action);
             const lastSucceedAt = (new Date()).toISOString();
+
             yield put(asSuccess(actionFn(response, { lastSucceedAt })));
 
             setItem(`${action.type}/${path}`, {
