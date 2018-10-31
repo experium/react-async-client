@@ -163,6 +163,10 @@ describe('With Async Client HOC', () => {
             await defer.promise.then();
             wrapper.update();
 
+            const state = store.getState();
+            const meta = firstAction.selectMeta(state);
+            expect(meta.lastSucceedAt).toBeTruthy();
+
             expect(wrapper.find('#first').text()).toEqual(firstData);
         });
 
