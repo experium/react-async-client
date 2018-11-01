@@ -99,4 +99,37 @@ describe('Async Client withHandlers HOC', () => {
             );
         })
     });
+
+    describe('withAsyncHandlers({ metaHandler })', () => {
+        const handler = jest.fn();
+
+        const ComponentWithParamsHandlers = withAsyncActions({
+            action: asyncAction.withParams('params')
+                .withSuccessHandler(handler)
+        })(() => null);
+
+        const ComponentWithNoparamsHandlers = withAsyncActions({
+            action: asyncAction.withParams(() => ({ id: '1' }))
+                .withSuccessHandler(handler)
+        })(props => (
+            <div>
+                <Component {...props} />
+                <ComponentWithParamsHandlers />
+            </div>
+        ));
+
+        const { wrapper } = setupComponent(ComponentWithNoparamsHandlers);
+        const paramsComponent = wrapper.find(Component);
+
+
+        it('should not handle withSuccessHandler() with other params', async () => {
+            const defer = createPromise(actionData);
+            paramsComponent.props().action.dispatch(defer.promise);
+
+            defer.resolve();
+            await defer.promise.then();
+
+            expect(handler).toHaveBeenCalledTimes(1);
+        });
+    });
 });
