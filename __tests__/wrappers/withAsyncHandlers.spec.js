@@ -12,7 +12,7 @@ const Component = (props) => {
     const { action } = props;
 
     return (
-        <div>{ action.data }</div>
+        <div>{ action ? action.data : null }</div>
     );
 };
 const PropsProviderComponent = ({ store, AsyncComponent, ...props}) => (
@@ -131,5 +131,24 @@ describe('Async Client withHandlers HOC', () => {
 
             expect(handler).toHaveBeenCalledTimes(1);
         });
+    });
+
+    describe('withAsyncHandlers with no actions', () => {
+        const ComponentWithoutActions = withAsyncHandlers({
+            action: {
+                successHandler: metaHandler(successHandler),
+                errorHandler: metaHandler(errorHandler),
+                pendingHandler: metaHandler(pendingHandler),
+            }
+        })(Component);
+
+
+        it('should no error', async () => {
+            const { wrapper } = setupComponent(ComponentWithoutActions);
+            const component = wrapper.find(Component);
+
+            expect(component.props().action).toBeFalsy();
+        });
+
     });
 });

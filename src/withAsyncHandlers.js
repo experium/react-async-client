@@ -37,14 +37,14 @@ export const withAsyncHandlers = actionsConfig => {
                 }, action);
 
                 const actionHandlers = pick(handlerProps, action);
-                forEachObjIndexed((handler, key) => {
-                    const actionType = handlerTakers[key] && handlerTakers[key](
-                        pathOr(action.type, [actionName, 'type'], props)
-                    );
 
-                    if (handler && actionType) {
+                forEachObjIndexed((handler, key) => {
+                    const actionType = pathOr(action.type, [actionName, 'type'], props);
+                    const actionHandlerType = actionType && handlerTakers[key] && handlerTakers[key](actionType);
+
+                    if (handler && actionHandlerType) {
                         sagas.push(function* (getProps) {
-                            const pattern = getHandlerPattern(action, actionType, getProps);
+                            const pattern = getHandlerPattern(action, actionHandlerType, getProps);
 
                             yield takeEvery(pattern, function* (takedAction) {
                                 yield handler(getProps(), takedAction);
@@ -54,7 +54,11 @@ export const withAsyncHandlers = actionsConfig => {
                 }, actionHandlers);
             }, actions);
 
-            this.Component = withSagas(sagas)(WrappedComponent);
+            if (sagas.length) {
+                this.Component = withSagas(sagas)(WrappedComponent);
+            } else {
+                this.Component = WrappedComponent;
+            }
         }
 
         render() {
