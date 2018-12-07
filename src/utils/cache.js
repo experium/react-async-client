@@ -1,8 +1,8 @@
-import { put, select } from 'redux-saga/effects';
+import { put } from 'redux-saga/effects';
 import { compose, merge } from 'ramda';
 
 import { asRequest, asError, asSuccess } from '../actionHelpers';
-import { getPath, noParamsKey, selectActionMeta } from '../asyncHelpers';
+import { getPath, noParamsKey } from '../asyncHelpers';
 import { doAction } from './doAction';
 
 export const createRequestCacheGenerator = ({ getItem, setItem }) => {
