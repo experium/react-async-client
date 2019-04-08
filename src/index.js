@@ -116,8 +116,8 @@ export {
     createAction
 } from './actionHelpers';
 export {
-    selectData,
-    selectMeta,
+    selectActionData,
+    selectActionMeta,
 } from './asyncHelpers';
 export * from './utils/saga';
 export * from './utils/doAction';
