@@ -3,10 +3,10 @@ import createSagaMiddleware from 'redux-saga';
 import { all } from 'redux-saga/effects';
 import { getAsyncReducers, getAsyncSagas } from '../../src';
 
-export const sagaMiddleware = createSagaMiddleware();
-const middlewares = [sagaMiddleware];
-
 export default function configureStore(initialState = {}) {
+    const sagaMiddleware = createSagaMiddleware();
+    const middlewares = [sagaMiddleware];
+
     const store = createStore(
         combineReducers({
             ...getAsyncReducers(),
@@ -22,5 +22,8 @@ export default function configureStore(initialState = {}) {
         ]);
     });
 
-    return store;
+    return {
+        store,
+        sagaMiddleware,
+    };
 };

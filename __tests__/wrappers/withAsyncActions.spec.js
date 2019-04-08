@@ -2,7 +2,7 @@ import React from 'react';
 import { mount } from 'enzyme';
 import { Provider } from 'react-redux';
 
-import configureStore, { sagaMiddleware } from '../test-utils/configureStore';
+import configureStore from '../test-utils/configureStore';
 import { createPromise } from '../test-utils/promiseHandlers';
 import {
     createAsyncAction,
@@ -35,7 +35,7 @@ const Component = (props) => {
         </div>
     );
 };
-const PropsProviderComponent = ({ store, AsyncComponent, ...props}) => (
+const PropsProviderComponent = ({ store, sagaMiddleware, AsyncComponent, ...props}) => (
     <SagaProvider sagaMiddleware={sagaMiddleware}>
         <Provider store={store}>
             <AsyncComponent {...props} />
@@ -43,14 +43,16 @@ const PropsProviderComponent = ({ store, AsyncComponent, ...props}) => (
     </SagaProvider>
 );
 
-const setup = ({first, second, action, ...props} = {}, AsyncComponent, store = configureStore({})) => {
+const setup = ({first, second, action, ...props} = {}, AsyncComponent, storeConfig = configureStore({})) => {
+    const { store, sagaMiddleware } = storeConfig;
     const wrapper = mount(
-        <PropsProviderComponent store={store} first={first} second={second} action={action} {...props} AsyncComponent={AsyncComponent}/>
+        <PropsProviderComponent store={store} sagaMiddleware={sagaMiddleware} first={first} second={second} action={action} {...props} AsyncComponent={AsyncComponent}/>
     );
 
     return {
         wrapper,
-        store
+        store,
+        sagaMiddleware
     };
 };
 
@@ -62,7 +64,7 @@ describe('With Async Client HOC', () => {
     const secondData = '2';
     const action = jest.fn();
 
-    const setupComponent = (Component, store) => setup({first: firstData, second: secondData, action}, Component, store);
+    const setupComponent = (Component, storeConfig) => setup({first: firstData, second: secondData, action}, Component, storeConfig);
 
     describe('withAsyncActions() renders', () => {
         const createAndSetupComponent = (actions) => {
@@ -295,9 +297,9 @@ describe('With Async Client HOC', () => {
             firstAction,
         }, {resetOnMount: true})(Component);
 
-        const store = configureStore({});
+        const { store, sagaMiddleware } = configureStore({});
         store.dispatch(firstAction.success('noreset'));
-        const { wrapper } = setupComponent(ComponentWithAsync, store);
+        const { wrapper } = setupComponent(ComponentWithAsync, { store, sagaMiddleware });
         const component = wrapper.find(Component);
 
         it('should not render previous data', () => {

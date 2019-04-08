@@ -2,7 +2,7 @@ import React from 'react';
 import { mount } from 'enzyme';
 import { Provider } from 'react-redux';
 
-import configureStore, { sagaMiddleware } from '../test-utils/configureStore';
+import configureStore from '../test-utils/configureStore';
 import { createPromise } from '../test-utils/promiseHandlers';
 import { createAsyncAction, withAsyncActions, withAsyncHandlers, SagaProvider } from '../../src/index';
 
@@ -15,7 +15,7 @@ const Component = (props) => {
         <div>{ action ? action.data : null }</div>
     );
 };
-const PropsProviderComponent = ({ store, AsyncComponent, ...props}) => (
+const PropsProviderComponent = ({ store, sagaMiddleware, AsyncComponent, ...props}) => (
     <SagaProvider sagaMiddleware={sagaMiddleware}>
         <Provider store={store}>
             <AsyncComponent {...props} />
@@ -24,10 +24,11 @@ const PropsProviderComponent = ({ store, AsyncComponent, ...props}) => (
 );
 
 const setup = (props = {}, AsyncComponent) => {
-    const store = configureStore({});
+    const { store, sagaMiddleware } = configureStore({});
     const wrapper = mount(
         <PropsProviderComponent
             store={store}
+            sagaMiddleware={sagaMiddleware}
             {...props}
             AsyncComponent={AsyncComponent}
         />

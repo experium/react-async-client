@@ -39,11 +39,7 @@ const controlledTakeOnceFailed = createTaker(prop('type'), false, controlledTake
 const takeOnceFailed = createAsyncAction(TAKE_ONCE_FAILED, takeOnceFailedHandler, {}, controlledTakeOnceFailed);
 
 const setup = () => {
-    const store = configureStore({});
-
-    return {
-        store
-    };
+    return configureStore({});
 };
 
 describe('utils/saga (takeFirst)', () => {

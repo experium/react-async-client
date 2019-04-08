@@ -3,7 +3,7 @@ import { mount } from 'enzyme';
 import { Provider } from 'react-redux';
 
 import { createPromise } from '../test-utils/promiseHandlers';
-import configureStore, { sagaMiddleware } from '../test-utils/configureStore';
+import configureStore from '../test-utils/configureStore';
 import {
     createAsyncAction,
     asyncConnect,
@@ -12,7 +12,9 @@ import {
 
 const Component = () => null;
 
-const setup = (AsyncComponent, store = configureStore({ user: {} })) => {
+const setup = (AsyncComponent, storeConfig = configureStore({ user: {} })) => {
+    const { store, sagaMiddleware } = storeConfig;
+
     return {
         wrapper: mount(
             <SagaProvider sagaMiddleware={sagaMiddleware}>
