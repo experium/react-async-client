@@ -419,7 +419,7 @@ describe('With Async Client HOC', () => {
         const ComponentWithMetaHandler = withAsyncActions({
             firstAction: firstAction.withSuccessHandler(({ action }) => action()),
             secondAction: secondAction.withErrorHandler(({ action }) => action()),
-            thirdAction: thirdAction.withPendingHandler(({ action }) => action())
+            thirdAction: thirdAction.withPendingHandler((props, action) => props.action(props, action))
         })(Component);
 
         const { wrapper } = setupComponent(ComponentWithMetaHandler);
@@ -452,6 +452,23 @@ describe('With Async Client HOC', () => {
             component.props().thirdAction.dispatch(defer.promise);
 
             defer.resolve();
+            expect(component.props().action).lastCalledWith(
+                expect.objectContaining({
+                    thirdAction: expect.objectContaining({
+                        meta: expect.objectContaining({
+                            pending: true,
+                            success: false,
+                            error: false,
+                        }),
+                    })
+                }),
+                expect.objectContaining({
+                    requestAction: expect.objectContaining({
+                        payload: expect.anything(),
+                    })
+                })
+            );
+
             await defer.promise.then();
 
             expect(component.props().action).toHaveBeenCalledTimes(3);
