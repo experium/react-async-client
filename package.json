@@ -4,7 +4,7 @@
   "main": "lib/index.js",
   "module": "./lib/index.js",
   "author": "Vyacheslav Salakhutdinov <megazoll@gmail.com>",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "devDependencies": {
     "@babel/cli": "^7.4.3",
     "@babel/core": "^7.4.3",
@@ -41,7 +41,7 @@
     "webpack-cli": "^3.3.0"
   },
   "peerDependencies": {
-    "prop-types": "^15.6.0",
+    "prop-types": ">=15.6.0",
     "ramda": ">=0.26",
     "react": ">=16.8.0",
     "react-redux": ">=6.0.0",
