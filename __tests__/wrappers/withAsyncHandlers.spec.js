@@ -70,6 +70,38 @@ describe('Async Client withHandlers HOC', () => {
             await defer.promise.then();
 
             expect(successHandler).toHaveBeenCalledTimes(1);
+            expect(successHandler).lastCalledWith(
+                expect.objectContaining({
+                    action: expect.objectContaining({
+                        meta: expect.objectContaining({
+                            pending: false,
+                            success: true,
+                            error: false,
+                        }),
+                    })
+                }),
+                expect.objectContaining({
+                    requestAction: expect.objectContaining({
+                        payload: expect.anything(),
+                    })
+                })
+            );
+        });
+
+        it('should handle withPendingHandler()', async () => {
+            expect(pendingHandler).toHaveBeenCalledTimes(1);
+            expect(pendingHandler).lastCalledWith(
+                expect.objectContaining({
+                    action: expect.objectContaining({
+                        meta: expect.objectContaining({
+                            pending: true,
+                            success: false,
+                            error: false,
+                        }),
+                    })
+                }),
+                expect.anything()
+            );
         });
 
         it('should handle withErrorHandler()', async () => {
@@ -81,11 +113,23 @@ describe('Async Client withHandlers HOC', () => {
                 await defer.promise.catch();
             } catch(e) {
                 expect(errorHandler).toHaveBeenCalledTimes(1);
+                expect(errorHandler).lastCalledWith(
+                    expect.objectContaining({
+                        action: expect.objectContaining({
+                            meta: expect.objectContaining({
+                                pending: false,
+                                success: false,
+                                error: expect.anything(),
+                            }),
+                        })
+                    }),
+                    expect.objectContaining({
+                        requestAction: expect.objectContaining({
+                            payload: expect.anything(),
+                        })
+                    })
+                );
             }
-        });
-
-        it('should handle withPendingHandler()', async () => {
-            expect(pendingHandler).toHaveBeenCalledTimes(2);
         });
 
         it('should pass action to handler', async () => {
@@ -98,7 +142,7 @@ describe('Async Client withHandlers HOC', () => {
                     })
                 })
             );
-        })
+        });
     });
 
     describe('withAsyncHandlers({ metaHandler })', () => {
